@@ -1,0 +1,65 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+	    {if permission('manage', 'group_add')}
+	    <a type="button" href="{url('manage/group_add')}" class="btn btn-info pull-right">添加分组</a>
+	    {/if}
+        <h4>分组列表</h4>
+    </header>
+    <div class="panel-body">
+	    <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin">
+	            <thead>
+	            <tr>
+	                <th>创建时间</th>
+	                <th>名称</th>
+	                <th>操作</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {if:list $list}
+	            {foreach:$list as $g}
+	                <tr>
+	                    <td>
+	                        {$g->add_time}
+	                    </td>
+	                    <td>
+	                        {if $g->power == 1}
+	                        {$g->name}
+	                        {else}
+	                        <a href="{url('manage/group_edit', ['id'=>$g->id])}">{$g->name}</a>
+	                        {/if}
+	                    </td>
+	                    <td>
+	                        {if $g->power == 1}
+	                        <a class="btn btn-xs btn-danger">系统默认分组，不能修改</a>
+	                        {else}
+	                        <a href="{url('manage/group_edit', ['id'=>$g->id])}" class="btn btn-xs btn-info">修改</a>
+	                        <a data-url="{url('manage/group_delete', ['id'=>$g->id])}" onclick="main.ajaxDelete(this)" data-msg="确定要删除此分组吗？" class="btn btn-xs btn-danger">删除</a>
+	                        <a data-url="{url('manage/group_force', ['id'=>$g->id])}" onclick="main.ajaxDelete(this)" data-msg="确定要删除此分组和分组下面的用户吗？" class="btn btn-xs btn-danger">强制删除</a>
+	                        {/if}
+	                    </td>
+	                </tr>
+	            {/foreach:$list}
+	            {else:list}
+	            <tr class="text-center">
+	                <td colspan="4">暂无数据</td>
+	            </tr>
+	            {/if:list}
+	            </tbody>
+	        </table>
+	    </div>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+
+{/block}

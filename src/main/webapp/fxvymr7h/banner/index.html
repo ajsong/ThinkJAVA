@@ -1,0 +1,110 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+	    <a type="button" href="{url('banner/add')}" class="btn btn-info pull-right">添加广告</a>
+        <h4>广告列表</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-block" action="">
+            <div class="form-group">
+                <div class="col-sm-2 no-pd-r">
+                    <input type="text" id="keyword" value="{$Request.get.keyword}" name="keyword" class="form-control" placeholder="关键词">
+                </div>
+                <div class="col-sm-1 no-pd-r">
+                    <select name="type" class="form-control">
+                        <option value="">类型</option>
+                        {foreach $types as $g}
+                        <option {if $Request.get.type==$g.code}selected{/if} value="{$g.code}">{$g.memo}</option>
+	                    {/foreach}
+                    </select>
+                </div>
+                <div class="col-sm-1 no-pd-r">
+                    <select name="position" class="form-control">
+                        <option value="">位置</option>
+                        {foreach $positions as $g}
+                        <option {if $Request.get.position==$g.code}selected{/if} value="{$g.code}">{$g.memo}</option>
+	                    {/foreach}
+                    </select>
+                </div>
+                <div class="col-sm-1 no-pd-r">
+                    <select name="status" class="form-control">
+                        <option value="">状态</option>
+                        <option {if $Request.get.status=='1'}selected{/if} value="1">已投放</option>
+                        <option {if $Request.get.status=='0'}selected{/if} value="0">未展示</option>
+                    </select>
+                </div>
+                <div class="col-sm-1 no-pd-r">
+                    <input type="text" value="{$Request.get.begin_time}" name="begin_time" class="form-control col-datepicker" data-readonly="false" initdate="" placeholder="开始时间">
+                </div>
+	            <div class="col-gap">-</div>
+                <div class="col-sm-1 no-pd-r">
+                    <input type="text" value="{$Request.get.end_time}" name="end_time" class="form-control col-datepicker" data-readonly="false" initdate="" placeholder="结束时间">
+                </div>
+	            <div class="col-sm-1">
+	                <button type="submit" class="btn btn-color">搜索</button>
+	            </div>
+            </div>
+        </form>
+        <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin">
+	            <thead>
+	            <tr>
+	                <th>ID</th>
+	                <th>名称</th>
+	                <th>图片</th>
+	                <th>类型</th>
+	                <th>位置</th>
+	                <th>状态</th>
+	                <th>创建时间</th>
+	                <th>操作</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {if count($list)}
+	            {foreach $list as $g}
+	            <tr>
+	                <td>{$g.id}</td>
+		            <td><a href="{url('banner/edit', ['id'=>$g.id])}">{$g.name}</a></td>
+	                <td>
+		                <a href="{$g.pic}" target="_blank"><img src="{$g.pic}" style="height:40px;" /></a>
+	                </td>
+	                <td>{$g->getType($g.type)}</td>
+	                <td>{$g->getPosition($g.position)}</td>
+	                <td>
+	                    {if $g.status==1}
+	                    <a class="btn btn-xs btn-primary">已投放</a>
+	                    {else}
+	                    <a class="btn btn-xs btn-warning">未展示</a>
+	                    {/if}
+	                </td>
+	                <td>{:date('Y-m-d H:i', $g.add_time)}</td>
+	                <td>
+	                    <a href="{url('banner/edit', ['id'=>$g.id])}" class="btn btn-xs btn-info">修改</a>
+	                    <a data-url="{url('banner/delete', ['id'=>$g.id])}" onclick="main.ajaxDelete(this)" data-msg="确定要删除吗？" class="btn btn-xs btn-danger">删除</a>
+	                </td>
+	            </tr>
+	            {/foreach}
+	            {else}
+	            <tr class="text-center">
+	                <td colspan="12">暂无数据</td>
+	            </tr>
+	            {/if}
+	            </tbody>
+	        </table>
+        </div>
+        <div class="page">
+            {$list|raw}
+        </div>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+
+{/block}

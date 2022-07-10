@@ -1,0 +1,49 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+        <h4>{if $row.id>0}编辑{else}添加{/if}管理员</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-horizontal" method="post" onsubmit="return false" role="form">
+	        <input type="hidden" name="id" value="{$row.id}">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">账号</label>
+                <div class="col-sm-5">
+                    <input type="text" name="name" value="{$row.name}" class="form-control" placeholder="请输入用户名">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">密码</label>
+                <div class="col-sm-5">
+                    <input type="text" name="password" class="form-control" {if $row.id>0}placeholder="不修改请留空"{/if}>
+                </div>
+            </div>
+	        {if permission('manage', 'group_edit')}
+            <div class="form-group">
+                <label class="col-sm-2 control-label">分组</label>
+                <div class="col-sm-8">
+                    {foreach $group as $g}
+	                <input type="radio" data-type="radio" data-text="{$g->name}" name="group_id" {if $row.group_id==$g.id}checked{/if} value="{$g.id}" />
+                    {/foreach}
+                </div>
+            </div>
+	        {/if}
+            <div class="form-actions">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" data-url="{url('manage/edit')}" onclick="main.ajaxForm(this)" class="btn btn-primary">提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+
+{/block}

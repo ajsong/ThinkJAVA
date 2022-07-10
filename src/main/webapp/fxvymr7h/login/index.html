@@ -1,0 +1,106 @@
+<!doctype html>
+<html class="no-js" lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <title>后台登录</title>
+    <link rel="stylesheet" href="{__STATIC__}/gm/vendor/offline/theme.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/vendor/pace/theme.css">
+
+    <link rel="stylesheet" href="{__STATIC__}/gm/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/fontawesome-5.7.2/css/all.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/animate.min.css">
+
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/skins/palette.1.css" id="skin">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/fonts/style.1.css" id="font">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/jquery.confirm.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/main.css">
+
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+	<script src="{__STATIC__}/gm/vendor/jquery-1.11.1.min.js"></script>
+	<script src="{__STATIC__}/gm/vendor/pace/pace.min.js"></script>
+	<script src="{__STATIC__}/gm/vendor/fastclick.js"></script>
+	<script src="{__STATIC__}/gm/js/jquery.confirm.js"></script>
+
+    <script src="{__STATIC__}/js/coo.js?import=coo.pc,coo.mobile"></script>
+	<script src="{__STATIC__}/gm/js/main.js"></script>
+</head>
+
+<body class="bg-color center-wrapper blur-login">
+	<div class="position-relative">
+		<div id="login-box" class="login-box visible widget-box no-border">
+			<div class="widget-body">
+				<div class="widget-main">
+					<h4 class="header blue bigger">请登录</h4>
+					<form action="/index/login" method="post">
+						<fieldset>
+							<span class="block clearfix ra-4">
+								<input type="text" name="username" id="username" class="form-control" />
+								<label class="block" for="username">用户名</label>
+							</span>
+
+							<span class="block clearfix ra-4">
+								<input type="password" name="password" id="password" class="form-control" />
+								<label class="block" for="password">密码</label>
+							</span>
+
+							<div class="checkbox">
+								<label class="checkbox checkbox-custom pull-left">
+									<input type="checkbox" name="remember" id="remember" value="1" /><i></i> 记住登录
+								</label>
+							</div>
+
+							<div class="space"></div>
+
+							<div class="clearfix">
+								<button type="button" onclick="login()" class="ra-4 pull-right btn btn-sm btn-primary">
+									<span class="bigger-110">登录</span>
+								</button>
+							</div>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+function login() {
+    let username = $('#username').val();
+    if (!username.length) {
+        main.alert('请填写登录用户名');
+        return false;
+    }
+    let password = $('#password').val();
+    if (!password.length) {
+        main.alert('请填写登录密码');
+        return false;
+    }
+	let remember = $('#remember').is(':checked') ? 1 : 0
+    main.ajaxPost("{url('index')}", {username: username, password: password, remember: remember});
+}
+$(function(){
+	$('.form-control').on('input propertychange', function(){
+		let _this = $(this);
+		if(_this.val().length){
+			_this.addClass('inputed');
+		}else{
+			_this.removeClass('inputed');
+		}
+	}).trigger('input');
+	$('input').on('keyup', function(e) {
+		let code = e.which||e.keyCode;
+		if (code === 13) {
+			login();
+			return false;
+		}
+	});
+});
+</script>
+</html>
+

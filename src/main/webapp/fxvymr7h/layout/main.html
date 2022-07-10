@@ -1,0 +1,73 @@
+<!doctype html>
+<html class="no-js" lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <title>后台管理</title>
+    <link rel="stylesheet" href="{__STATIC__}/gm/vendor/offline/theme.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/vendor/pace/theme.css">
+
+    <link rel="stylesheet" href="{__STATIC__}/gm/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/fontawesome-5.7.2/css/all.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/animate.min.css">
+
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/panel.css">
+
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/skins/palette.1.css" id="skin">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/fonts/style.1.css" id="font">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/jquery.confirm.css">
+    <link rel="stylesheet" href="{__STATIC__}/gm/css/main.css">
+	
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+	<script src="{__STATIC__}/gm/vendor/jquery-1.11.1.min.js"></script>
+    <script src="{__STATIC__}/gm/vendor/modernizr.js"></script>
+
+	<script src="{__STATIC__}/gm/vendor/jquery.slimscroll.js"></script>
+	<script src="{__STATIC__}/gm/vendor/offline/offline.min.js"></script>
+	<script src="{__STATIC__}/gm/vendor/pace/pace.min.js"></script>
+	<script src="{__STATIC__}/gm/vendor/fastclick.js"></script>
+	<script src="{__STATIC__}/gm/js/off-canvas.js"></script>
+	<script src="{__STATIC__}/gm/js/jquery.confirm.js"></script>
+	<script src="{__STATIC__}/gm/js/panel.js"></script>
+
+    <script src="{__STATIC__}/js/coo.js?import=coo.pc,coo.mobile"></script>
+    <script src="{__STATIC__}/gm/js/main.js"></script>
+
+	<link rel="stylesheet" href="{__STATIC__}/css/datepicker.css">
+	<link rel="stylesheet" href="{__STATIC__}/js/webuploader/webuploader.css">
+	<script type="text/javascript" src='{__STATIC__}/js/webuploader/webuploader.js'></script>
+	<script src="{__STATIC__}/gm/js/ckeditor5/ckeditor.js"></script>
+	<script src="{__STATIC__}/gm/js/ckeditor5/ckeditor.config.js"></script>
+	<script src="{__STATIC__}/gm/js/ckeditor5/translations/zh-cn.js"></script>
+    {block name="header"}
+{/block}
+</head>
+
+<body>
+<div class="app">
+    {include file="layout/header" /}
+
+    <section class="layout" style="padding-top: 50px">
+
+        {include file="layout/left" /}
+
+        <section class="main-content" >
+
+            <div class="content-wrap ">
+                {block name="content"}{/block}
+            </div>
+
+            <div class="site-overlay"></div>
+        </section>
+
+    </section>
+</div>
+
+{block name="footer"}{/block}
+</body>
+</html>

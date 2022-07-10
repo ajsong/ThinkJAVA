@@ -1,0 +1,82 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+{block name="content"}
+<section class="panel">
+
+    <header class="panel-heading">
+        <h4>{if $row.id>0}修改{else}添加{/if}导航</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-horizontal" method="post" onsubmit="return false" role="form">
+	        <input type="hidden" name="id" value="{$row.id}">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">位置</label>
+                <div class="col-sm-5">
+                    <select name="parent_id" class="form-control parent_id">
+                        <option value="-1" {if $row.level==0}selected{/if}>隐藏</option>
+                        <option value="0" {if $row.level!=0 && $row.parent_id==0}selected{/if}>根导航</option>
+                        {foreach:$parent as $p}
+                        <option value="{$p.id}" {if $row.level!=0 && $row.parent_id==$p.id}selected{/if}>{$p.name}</option>
+                        {/foreach:$parent}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-5">
+                    <input type="text" name="name" value="{$row.name}" class="form-control" placeholder="请输入导航名称">
+                </div>
+            </div>
+            <div class="form-group menu-parent hidden">
+                <label class="col-sm-2 control-label">图标</label>
+                <div class="col-sm-5">
+                    <input type="text" name="icon" value="{$row.icon}" class="form-control" placeholder="例如 fa fa-user">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label path"></label>
+                <div class="col-sm-5">
+                    <input type="text" name="path" id="path" value="{$row.path}" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">排序</label>
+                <div class="col-sm-5">
+                    <input type="text" name="sort" value="{$row.sort}" class="form-control" placeholder="数字越小越前">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" onclick="main.ajaxForm(this)" data-url="{url('menu/edit')}" class="btn btn-primary">提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+<script>
+$(function(){
+	$('.parent_id').on('change', function(){
+		let parent_id = Number($(this).find('option:selected').val());
+		$('.menu-parent, .menu-children').addClass('hidden');
+		$('.path').parent().addClass('hidden');
+		if (parent_id > 0) {
+			$('.menu-children').removeClass('hidden');
+			$('.path').html('路径').parent().removeClass('hidden');
+			$('#path').attr('placeholder', '请输入导航路径');
+		} else if (parent_id === 0) {
+			$('.menu-parent').removeClass('hidden');
+			$('.path').html('权限标识').parent().removeClass('hidden');
+			$('#path').attr('placeholder', '请输入权限标识');
+		}
+	}).trigger('change');
+})
+</script>
+{/block}

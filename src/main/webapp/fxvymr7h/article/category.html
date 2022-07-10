@@ -1,0 +1,73 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+	    <button type="button" class="btn btn-primary pull-right" coo-click="addRow">添加分类</button>
+        <h4>文章分类</h4>
+    </header>
+    <div class="panel-body">
+        <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin" data-save-validate-field="name" data-save="{url('category_edit')}" data-save-all="{url('category_edit_all')}">
+	            <thead>
+	            <tr>
+	                <th>名称</th>
+	                <th width="120">状态</th>
+	                <th width="120">排序</th>
+	                <th>操作</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {foreach $list as $g}
+	            <tr>
+	                <td>
+	                    <input type="text" class="form-control text-center" name="name" value="{$g.name}">
+	                </td>
+	                <td>
+		                <label class="checkbox-app"><input type="checkbox" name="status" {if $g.status==1}checked{/if}><i></i></label>
+	                </td>
+	                <td>
+	                    <input type="number" class="form-control text-center" name="sort" value="{$g.sort}" placeholder="越小越前">
+	                </td>
+	                <td>
+	                    <a data-save-id="{$g.id}" class="btn btn-xs btn-primary">修改</a>
+		                <a data-url="{url('category_delete', ['id'=>$g.id])}" onclick="main.ajaxDelete(this, deleteRow)" data-msg="确定要删除？" class="btn btn-xs btn-danger">删除</a>
+	                </td>
+	            </tr>
+	            {/foreach}
+	            </tbody>
+	        </table>
+        </div>
+    </div>
+</section>
+{/block}
+
+{block name="footer"}
+<script>
+function addRow(){
+	let html = '<tr>\
+        <td>\
+            <input type="text" class="form-control text-center" name="name">\
+        </td>\
+        <td>\
+            <label class="checkbox-app"><input type="checkbox" name="status" checked><i></i></label>\
+        </td>\
+        <td>\
+            <input type="number" class="form-control text-center" name="sort" value="999" placeholder="越小越前">\
+        </td>\
+        <td>\
+            <a data-save-id class="btn btn-xs btn-primary">提交</a>\
+            <a onclick="deleteRow(this)" class="btn btn-xs btn-danger">删除</a>\
+        </td>\
+    </tr>';
+	$('.table tbody').append(html);
+}
+function deleteRow(e){
+	$(e).parent().parent().remove()
+}
+</script>
+{/block}

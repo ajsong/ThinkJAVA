@@ -1,0 +1,39 @@
+<header class="header header-fixed navbar">
+    <div class="brand" style="background-color: #535A7C">
+        <a href="javascript:void(0)" class="fa fa-bars off-left visible-xs" data-toggle="off-canvas" data-move="ltr"></a>
+        <a href="{url('index/index')}" class="navbar-brand">
+            <i class="fa fa-stop mg-r-sm"></i>
+            <span class="heading-font">后台管理系统</span>
+        </a>
+    </div>
+
+    <div class="brand-right">
+	    <ul class="nav navbar-nav navbar-right off-right">
+	        <li class="quickmenu">
+	            <a href="javascript:void(0)" data-toggle="dropdown">
+	                {$manage.name}
+	                <i class="caret mg-l-xs hidden-xs no-margin"></i>
+	            </a>
+	            <ul class="dropdown-menu dropdown-menu-right mg-r-xs">
+	                <li>
+	                    <a href="{url('index/update')}">修改密码</a>
+	                </li>
+		            {if $manage.super == 1}
+	                <li>
+	                    <a href="{url('menu/index')}">导航配置</a>
+	                </li>
+	                <li>
+	                    <a href="{url('index/log')}">操作日志</a>
+	                </li>
+	                <li>
+	                    <a href="{url('index/changePrefix')}" class="prompt" prompt="请输入旧表前缀" field="old_prefix">更改数据库前缀</a>
+	                </li>
+		            {/if}
+	                <li>
+	                    <a href="{url('login/logout')}">退出</a>
+	                </li>
+	            </ul>
+	        </li>
+	    </ul>
+    </div>
+</header>

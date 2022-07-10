@@ -1,0 +1,47 @@
+{extend name="layout/main" /}
+
+{block name="header"}{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+        <h4>充值</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-horizontal" method="post" onsubmit="return false" role="form">
+            <input type="hidden" name="member_id" class="form-control" value="{$Request.get.member_id}">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">充值类型</label>
+                <div class="col-sm-5">
+                    <select name="field" class="form-control">
+                        {foreach $currency as $key=>$g}
+                        <option value="{$key}">{$g}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">数量</label>
+                <div class="col-sm-5">
+                    <input type="number" name="number" class="form-control" placeholder="请输入充值数量">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">备注</label>
+                <div class="col-sm-5">
+                    <textarea class="form-control" rows="3" name="remark">系统充值</textarea>
+                </div>
+            </div>
+	        
+            <div class="form-actions">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" data-url="{url('member/recharge')}" onclick="main.ajaxForm(this)" class="btn btn-primary">提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{/block}
+
+{block name="footer"}
+{/block}

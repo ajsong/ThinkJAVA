@@ -1,0 +1,112 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+<link type="text/css" href="{__STATIC__}/gm/js/jsonview/jquery.jsonview.min.css" rel="stylesheet" />
+<script type="text/javascript" src="{__STATIC__}/gm/js/jsonview/jquery.jsonview.min.js"></script>
+<style>
+.data-jsonview{ position:absolute; z-index:9999; left:0; top:0; right:0; bottom:0; margin:0!important; background:#fff; }
+.data-jsonview > div{ position:absolute; z-index:99; left:0; top:0; right:0; bottom:0; padding:15px; overflow:auto; }
+.data-jsonview > a{ display:block; position:absolute; z-index:100; top:10px; right:10px; text-decoration:none; width:20px; height:20px; background:url("data:image/svg+xml;charset=utf-8,%3Csvg%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Cg%20class%3D%22transform-group%22%3E%3Cg%20transform%3D%22scale(0.0625%2C%200.0625)%22%3E%3Cpath%20d%3D%22M557.312%20513.248l265.28-263.904c12.544-12.48%2012.608-32.704%200.128-45.248-12.512-12.576-32.704-12.608-45.248-0.128l-265.344%20263.936-263.04-263.84C236.64%20191.584%20216.384%20191.52%20203.84%20204%20191.328%20216.48%20191.296%20236.736%20203.776%20249.28l262.976%20263.776L201.6%20776.8c-12.544%2012.48-12.608%2032.704-0.128%2045.248%206.24%206.272%2014.464%209.44%2022.688%209.44%208.16%200%2016.32-3.104%2022.56-9.312l265.216-263.808%20265.44%20266.24c6.24%206.272%2014.432%209.408%2022.656%209.408%208.192%200%2016.352-3.136%2022.592-9.344%2012.512-12.48%2012.544-32.704%200.064-45.248L557.312%20513.248z%22%20fill%3D%22%23000000%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E") no-repeat center center; background-size:cover; }
+</style>
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+        <h4>日志列表</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-block" action="">
+            <div class="form-group">
+                <div class="col-sm-2 no-pd-r">
+                    <input type="text" id="keyword" value="{$Request.get.keyword}" name="keyword" class="form-control" placeholder="关键词">
+                </div>
+                <div class="col-sm-1 no-pd-r">
+                    <select name="type" class="form-control">
+                        <option value="">类型</option>
+	                    {foreach $types as $key=>$g}
+                        <option {if $Request.get.type==$key}selected{/if} value="{$key}">{$g}</option>
+	                    {/foreach}
+                    </select>
+                </div>
+                <div class="col-sm-1">
+	                <button type="submit" class="btn btn-color">搜索</button>
+	            </div>
+            </div>
+        </form>
+        <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin">
+	            <thead>
+	            <tr>
+	                <th>管理员ID</th>
+	                <th>管理员账号</th>
+	                <th>类型</th>
+	                <th>控制器</th>
+	                <th>方法</th>
+	                <th class="text-left">内容</th>
+	                <th>IP</th>
+	                <th>创建时间</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {if count($list)}
+	            {foreach $list as $g}
+	            <tr>
+	                <td>{$g.manage_id}</td>
+		            <td>{$g.manage_name}</td>
+	                <td>
+	                    {if $g.type=='path'}
+	                    <a class="btn btn-xs btn-primary">访问路径</a>
+	                    {elseif $g.type=='insert'}
+	                    <a class="btn btn-xs btn-success">插入数据</a>
+	                    {elseif $g.type=='update'}
+	                    <a class="btn btn-xs btn-warning">更新数据</a>
+	                    {elseif $g.type=='delete'}
+	                    <a class="btn btn-xs btn-danger">删除数据</a>
+	                    {/if}
+	                </td>
+		            <td>{$g.app}</td>
+		            <td>{$g.act}</td>
+	                <td class="text-left">
+		                {if $g.type=='path'}
+		                {$g.remark}
+		                {else}
+		                <div class="data-view" style="max-width:500px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">{$g.remark}</div>
+		                <textarea class="hidden">{$g.remark}</textarea>
+		                {/if}
+	                </td>
+	                <td>{$g.ip}</td>
+	                <td>{:date('Y-m-d H:i', $g.add_time)}</td>
+	            </tr>
+	            {/foreach}
+	            {else}
+	            <tr class="text-center">
+	                <td colspan="8">暂无数据</td>
+	            </tr>
+	            {/if}
+	            </tbody>
+	        </table>
+        </div>
+        <div class="page">
+            {$list|raw}
+        </div>
+    </div>
+</section>
+
+<div class="data-jsonview hidden"><a href="javascript:void(0)"></a><div></div></div>
+{/block}
+
+
+{block name="footer"}
+<script>
+$(function(){
+	$('.data-view').tapper(function(){
+		let jsonview = $('.data-jsonview').removeClass('hidden');
+		jsonview.children('div').scrollTop(0).JSONView($(this).next().val());
+		jsonview.children('a').on('click', function(){
+			jsonview.addClass('hidden');
+		});
+	});
+});
+</script>
+{/block}

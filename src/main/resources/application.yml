@@ -1,0 +1,122 @@
+#运行端口
+server:
+  port: 9090
+  #Session超时
+  servlet:
+    session:
+      timeout: 60m
+
+logging:
+  level:
+    root: off
+
+spring:
+  main:
+    banner-mode: off
+  #数据库(主)
+  datasource:
+    url: jdbc:mysql://localhost:3306/lhtl?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: 1e4a3e55d8922cea
+    prefix: lh_
+    cache-dir: sql
+    #数据库(从)
+    slaver:
+     - url:
+       username:
+       password:
+  #上传文件, 使用自定义上传类下面必须设置为false
+  servlet:
+    multipart:
+      enabled: false
+      #使用 springboot 上传, 需要注释掉spring.servlet.multipart.enabled
+      #上传文件总的最大值
+      #max-request-size: 10MB
+      #单个文件的最大值
+      #max-file-size: 10MB
+    #本地上传路径, 对应根目录
+    upload:
+      path: uploads
+      #上传使用本地存储, true使用本地, false使用第三方
+      local: true
+      memorysize: 10000
+      filesize: 10000
+      type: qiniu
+      fields: qiniu_bucketname:meke8|qiniu_accessKey:f00AW588u-so0OcCYaO7gY5xU7cY-WRzGkHOotx0|qiniu_secretKey:oe-NPL8_b25mFWlCsTt5vX2A4vLWd3PZp06TudYp|qiniu_domain:https://img.meke8.com
+  #模板
+  mvc:
+    view:
+      prefix: /META-INF/resources/
+      suffix: .html
+      #指定资源的jar包外相对路径
+      path: /templates
+      #模板引擎类型, Tengine|jsp
+      type: Tengine
+      cache:
+        enabled: true
+      cache-dir: templates
+      cache-split-char: '!@#$%^&*(^^^^^^%$#'
+      replace-str: '{"__STATIC__"=>"/static", "__URL__"=>"__DOMAIN__"}'
+    #静态资源路径
+    static-path-pattern: /static/**
+  web:
+    resources:
+      static-locations: classpath:/static/
+  #Redis
+  redis:
+    enabled: true
+    database: 1
+    host: 127.0.0.1
+    port: 6379
+    #Redis服务器连接密码（默认为空）
+    password:
+    # 连接超时时间（毫秒）
+    timeout: 1000
+    jedis:
+      pool:
+        # 连接池最大连接数(使用负值表示没有限制)
+        max-active: 200
+        # 连接池最大阻塞等待时间(使用负值表示没有限制)
+        max-wait: -1
+        # 连接池中的最大空闲连接
+        max-idle: 10
+        # 连接池中的最小空闲连接
+        min-idle: 0
+
+#域名绑定模块入口, 逗号隔开, 格式: host1=module1,host2=module2, host为*时默认代表前台
+sdk:
+  host:
+    module:
+      route: '*=index,spring.website.cn=fxvymr7h'
+  #默认模块、方法
+  app:
+    default:
+      controller: index
+      action: index
+  #静态资源文件夹, 竖线隔开
+  static:
+    resource:
+      dir: static
+  #伪静URI对应app&act, 格式: urlRexp1=app&act,urlRexp2=app&act
+  uri:
+    map: /s/\\d+=index&code
+  #图片主机名
+  image:
+    domain:
+  #前端忽略登录
+  not:
+    check:
+      login: '{"index"=>["*"], "article"=>["index", "detail"], "passport"=>["*"], "other"=>["*"], "cron"=>["*"]}'
+  #可外站AJAX跨域的APP、ACT, 单独设为星号为全站可跨域 sdk.access.allow=["*"]
+  access:
+    allow: '{"index"=>["*"]}'
+    #允许跨域请求的地址, 如 http://localhost:8080, 星号为全站可跨域
+    host: '["*"]'
+  #代码产生的临时文件存放文件夹
+  runtime:
+    dir: runtime
+  #缓存文件存放文件夹(在runtime.dir内)
+  cache:
+    #缓存类型, file、redis
+    type: file
+    dir: cache

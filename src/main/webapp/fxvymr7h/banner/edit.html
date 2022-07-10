@@ -1,0 +1,105 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+        <h4>{if $row.id>0}修改{else}添加{/if}广告</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-horizontal" method="post" onsubmit="return false" role="form">
+	        <input type="hidden" name="id" value="{$row.id}">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-5">
+                    <input type="text" value="{$row.name}" name="name" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">图片</label>
+                <div class="col-sm-5">
+                    <div class="col-uploader" data-url="{url('upload/image')}" data-name="pic" data-item="{$row.pic}"></div>
+	                <!--<div class="col-file" data-name="pic" data-item="{$row.pic}"></div>-->
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">类型</label>
+                <div class="col-sm-2">
+                    <select name="type" id="type" class="form-control">
+	                    <option value="">-</option>
+                        {foreach $types as $g}
+                        <option {if $row.type==$g.code}selected{/if} tip='{$g.tip}' value="{$g.code}">{$g.memo}</option>
+                        {/foreach}
+                    </select>
+                </div>
+				<span class="col-line"></span>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">广告内容</label>
+                <div class="col-sm-3">
+                    <input type="text" value="{$row.content}" name="content" class="form-control">
+                </div>
+				<span class="col-line">可填写id、链接或关键词</span>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">位置</label>
+                <div class="col-sm-5">
+                    <select name="position" class="form-control">
+	                    <option value="">-</option>
+                        {foreach $positions as $g}
+                        <option {if $row.position==$g.code}selected{/if} value="{$g.code}">{$g.memo}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">显示时间</label>
+                <div class="col-sm-3 no-padding">
+                    <div class="col-sm-5">
+	                    <input type="text" name="begin_time" id="begin_time" placeholder="开始时间" value="{if $row.begin_time>0}{date('Y-m-d H:i', $row.begin_time)}{/if}" class="form-control col-datepicker" data-readonly="false" />
+                    </div>
+					<span class="col-line">-</span>
+					<div class="col-sm-5">
+						<input type="text" name="end_time" id="end_time" placeholder="结束时间" value="{if $row.end_time>0}{date('Y-m-d H:i', $row.end_time)}{/if}" class="form-control col-datepicker" data-readonly="false" />
+					</div>
+                </div>
+				<span class="col-line">不设置即不限制</span>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">排序</label>
+                <div class="col-sm-5">
+                    <input type="text" value="{$row.sort}" name="sort" class="form-control" placeholder="数字越小，排到最前面">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">状态</label>
+                <div class="col-sm-8">
+	                <input type="radio" data-type="radio" data-text="显示" {if $row.status==1}checked{/if} name="status" value="1" />
+	                <input type="radio" data-type="radio" data-text="隐藏" {if $row.status==0}checked{/if} name="status" value="0" />
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" data-url="{url('banner/edit')}" onclick="main.ajaxForm(this)" class="btn btn-primary">提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+<script>
+$(function(){
+	$('#type').change(function(){
+		let selected = $(this).selected(), tip = '';
+		if(!!selected.attr('tip'))tip = selected.attr('tip').replace(/\\"/g, '');
+		$(this).parent().next().html(tip);
+	}).change();
+});
+</script>
+{/block}

@@ -1,0 +1,99 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+        <a type="button" href="{url('menu/add')}" class="btn btn-info pull-right">添加导航</a>
+        <h4>导航配置</h4>
+    </header>
+    <div class="panel-body">
+	    <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin" data-save="{url('menu/edit')}" data-save-all="{url('menu/edit_all')}">
+	            <thead>
+	            <tr>
+	                <th>ID</th>
+	                <th>名称</th>
+	                <th>位置</th>
+	                <th>排序</th>
+	                <th>路径</th>
+	                <th>图标</th>
+	                <th>操作</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {foreach:$list as $g}
+	            <tr>
+	                <td>
+		                {$g.id}
+	                </td>
+	                <td>
+	                    <input type="text" name="name" class="form-control text-center" value="{$g.name}">
+	                </td>
+	                <td>
+	                    <select name="parent_id" class="form-control {if $g.level==0}opacity{else}focus{/if}">
+	                        <option value="-1" {if $g.level==0}selected{/if}>隐藏</option>
+			                <option value="0" {if $g.level!=0 && $g.parent_id==0}selected{/if}>根导航</option>
+			                {foreach:$parent as $p}
+	                        <option value="{$p.id}" {if $g.level!=0 && $g.parent_id==$p.id}selected{/if}>{$p.name}</option>
+	                        {/foreach:$parent}
+	                    </select>
+	                </td>
+	                <td>
+	                    <input type="number" name="sort" class="form-control text-center" value="{$g.sort}">
+	                </td>
+	                <td>
+		                <input type="text" name="path" class="form-control" value="{$g.path}" placeholder="权限标识">
+	                </td>
+	                <td>
+	                    <input type="text" name="icon" class="form-control text-center" value="{$g.icon}">
+	                </td>
+	                <td>
+	                    <a data-save-id="{$g.id}" class="btn btn-xs btn-primary">修改</a>
+	                    <a data-url="{url('menu/delete', ['id'=>$g.id])}" onclick="main.ajaxDelete(this)" data-msg="确定要删除吗？" class="btn btn-xs btn-danger">删除</a>
+	                </td>
+	            </tr>
+		            {foreach:$g.children as $s}
+		            <tr>
+		                <td>
+			                <!--{$s.id}-->
+		                </td>
+		                <td>
+		                    <input type="text" name="name" class="form-control text-center" value="{$s.name}">
+		                </td>
+		                <td>
+			                <select name="parent_id" class="form-control {if $g.level==0 || $s.level==0}opacity{/if}">
+		                        <option value="-1" {if $s.level==0}selected{/if}>隐藏</option>
+				                <option value="0" {if $s.level!=0 && $s.parent_id==0}selected{/if}>根导航</option>
+				                {foreach:$parent as $p}
+		                        <option value="{$p.id}" {if $s.level!=0 && $s.parent_id==$p.id}selected{/if}>{$p.name}</option>
+		                        {/foreach:$parent}
+	                        </select>
+		                </td>
+		                <td>
+		                    <input type="number" name="sort" class="form-control text-center" value="{$s.sort}">
+		                </td>
+		                <td>
+		                    <input type="text" name="path" class="form-control text-right" value="{$s.path}">
+		                </td>
+	                    <td></td>
+		                <td>
+		                    <a data-save-id="{$s.id}" class="btn btn-xs btn-primary">修改</a>
+		                    <a data-url="{url('menu/delete', ['id'=>$s.id])}" onclick="main.ajaxDelete(this)" data-msg="确定要删除吗？" class="btn btn-xs btn-danger">删除</a>
+		                </td>
+		            </tr>
+		            {/foreach:$g.children}
+	            {/foreach:$list}
+	            </tbody>
+	        </table>
+	    </div>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+
+{/block}

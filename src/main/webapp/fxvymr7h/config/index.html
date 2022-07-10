@@ -1,0 +1,135 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+<style>
+.radio-custom, .checkbox-custom{ padding-top:0 !important; }
+</style>
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+	    {if $manage.super==1}<button type="button" class="btn btn-primary pull-right data-tips" tips-list="addType" tips-width="120" tips-follow="bottom" tips-fixy="5">添加参数</button>{/if}
+        <h4>网站配置</h4>
+    </header>
+    <div class="panel-body">
+	    <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin">
+	            <thead>
+	            <tr>
+	                <th>说明</th>
+	                <th>标识</th>
+	                <th>参数值</th>
+	                <th>操作</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {foreach $list as $g}
+	            <tr>
+	                <td {if $g.type=="textarea"}style="vertical-align:top;"{/if}>{$g.memo}</td>
+	                <td {if $g.type=="textarea"}style="vertical-align:top;"{/if}>{$g.key}</td>
+		            <td>
+			            {if $g.type=='file'}
+							<input type="hidden" id="origin_content" name="origin_content" value="{$g.content}" />
+							<div class="col-uploader" data-url="{url('upload/image')}" data-class="config-value" data-item="{$g.content}" data-fileType="{$g.fileType}" {$g.attr|raw}></div>
+							{if $g.is_image!=1 && $g.content}<span class="col-line"><a href="{$g.content}" target="_blank" style="float:left;margin-left:10px;">打开文件</a></span>{/if}
+						{elseif ($g.type=='checkbox-app' || $g.type=='radio' || $g.type=='checkbox' || $g.type=='select' || $g.type=='switch')}
+							{$g.content|raw}
+						{elseif ($g.type=='color')}
+							{$g.content|raw}
+						{elseif $g.type=='textarea'}
+							<textarea class="form-control config-value" rows="5" placeholder="{$g.placeholder}" {$g.attr|raw}>{$g.content}</textarea>
+						{elseif $g.type=='date'}
+							<input class="col-sm-6 config-value col-datepicker" type="text" initdate="{$g.content}" value="{$g.content}" placeholder="{$g.placeholder}" data-readonly="false" {$g.attr|raw} />
+						{else}
+							<input class="form-control config-value" type="{$g.type}" value="{$g.content}" placeholder="{$g.placeholder}" {$g.attr|raw} />
+						{/if}
+		            </td>
+	                <td>
+	                    <a onclick="updateConfig(this)" data-key="{$g.key}" data-type="{$g.type}" class="btn btn-xs btn-primary">修改</a>
+	                </td>
+	            </tr>
+	            {/foreach}
+	            </tbody>
+	        </table>
+	    </div>
+        <div class="page">
+            {$list|raw}
+        </div>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+<script>
+function updateConfig(e) {
+	let _this = $(e);
+    let key = _this.attr('data-key')||_this.parent().prev().prev().find('input').val()||'';
+    let type = _this.attr('data-type');
+    let value = '';
+	switch(type){
+		case 'checkbox-app':value = _this.parent().prev().find('.config-value').is(':checked') ? 1 : 0;break;
+		case 'select':value = _this.parent().prev().find('.config-value').find('option:selected').val()||'';break;
+		case 'radio':
+		case 'checkbox':
+		case 'switch':value = _this.parent().prev().find('.config-value').find('radio:checked').val()||'';break;
+		case 'file':
+		default:value = _this.parent().prev().find('.config-value').val()||'';
+	}
+	let memo = _this.parent().prev().prev().prev().find('input').val()||'';
+	main.ajaxPost("{url('config/edit')}", {memo: memo, key: key, value: value, type: type})
+}
+function addType() {
+	return [
+		{text:'文本框', attr:'data-type="text"', callback:addRow},
+		{text:'滑动选择器', attr:'data-type="checkbox-app"', callback:addRow},
+		{text:'图片', attr:'data-type="file"', callback:addRow},
+		{text:'颜色框', attr:'data-type="color"', callback:addRow},
+		{text:'日期框', attr:'data-type="date"', callback:addRow},
+		{text:'文本域', attr:'data-type="textarea"', callback:addRow},
+		{text:'密码框', attr:'data-type="password"', callback:addRow},
+		{text:'数字框', attr:'data-type="number"', callback:addRow},
+	];
+}
+function addRow() {
+	let type = $(this).attr('data-type');
+	let html = '<tr>\
+        <td '+(type==='textarea'?'style="vertical-align:top;"':'')+'><input class="form-control text-center" type="text" placeholder="说明" /></td>\
+        <td '+(type==='textarea'?'style="vertical-align:top;"':'')+'><input class="form-control text-center" type="text" placeholder="标识" /></td>\
+        <td>';
+			switch (type) {
+				case 'checkbox-app':
+					html += '<input type="checkbox" data-type="checkbox-app" class="config-value" value="1" />';
+					break;
+				case 'file':
+					html += '<div class="col-uploader" data-url="{url("upload/image")}" data-class="config-value"></div>';
+					break;
+				case 'color':
+					html += '<input type="text" class="col-sm-3 config-value" /><div class="col-color pull-left"></div>';
+					break;
+				case 'date':
+					html += '<input class="col-sm-6 config-value col-datepicker" type="text" data-readonly="false" />';
+					break;
+				case 'textarea':
+					html += '<textarea class="form-control config-value" rows="5"></textarea>';
+					break;
+				default:
+					html += '<input class="form-control config-value" type="'+type+'" />';
+					break;
+			}
+        html += '</td>\
+        <td>\
+            <a onclick="updateConfig(this)" data-type="'+type+'" class="btn btn-xs btn-warning">提交</a>\
+            <a onclick="$(this).parent().parent().remove()" class="btn btn-xs btn-danger">删除</a>\
+        </td>\
+    </tr>';
+	html = $(html);
+	$('.table tbody').append(html);
+	configs();
+	let wrap = $('.content-wrap');
+	wrap.scrollTop(wrap[0].scrollHeight);
+	setTimeout(function(){html.find('input').eq(0).focus()}, 100);
+}
+</script>
+{/block}

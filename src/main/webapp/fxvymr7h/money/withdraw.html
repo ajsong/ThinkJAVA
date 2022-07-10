@@ -1,0 +1,130 @@
+{extend name="layout/main" /}
+
+{block name="header"}{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+        <h4>提现记录</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-block" action="" >
+            <div class="form-group">
+                <div class="col-sm-2 no-pd-r">
+                    <input type="text" value="{$Request.get.keyword}" name="keyword" class="form-control" placeholder="关键词">
+                </div>
+                <div class="col-sm-1 no-pd-r">
+                    <select name="status" class="form-control">
+	                    <option value="">全部</option>
+						<option value="0" {if $Request.get.status=='0'}selected{/if}>等待审核</option>
+	                    <option value="2" {if $Request.get.status==2}selected{/if}>提现成功</option>
+	                    <option value="-2" {if $Request.get.status==-2}selected{/if}>提现失败</option>
+                    </select>
+                </div>
+                <div class="col-sm-1 no-pd-r">
+                    <input type="text" value="{$Request.get.begin_time}" name="begin_time" id="begin_time" class="form-control col-datepicker" data-readonly="false" placeholder="开始时间">
+                </div>
+	            <div class="col-gap">-</div>
+                <div class="col-sm-1 no-pd-r">
+                    <input type="text" value="{$Request.get.end_time}" name="end_time" id="end_time" class="form-control col-datepicker" data-readonly="false" placeholder="结束时间">
+                </div>
+                <div class="col-sm-1">
+	                <button type="submit" class="btn btn-color">搜索</button>
+	            </div>
+            </div>
+        </form>
+        <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin">
+	            <thead>
+	                <tr>
+	                    <th>ID</th>
+	                    <th class="text-left">账号</th>
+	                    <th class="text-left">提现地址</th>
+	                    <th>提现网络</th>
+	                    <th data-sortby="withdraw_money">提现金额</th>
+	                    <th>手续费</th>
+	                    <th>实际到账</th>
+	                    <th>状态</th>
+						<!--<th>审核备注</th>-->
+	                    <th>申请时间</th>
+						<!--<th>审核时间</th>-->
+	                    <th>操作</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+                {if count($list)}
+                {foreach $list as $g}
+                <tr>
+                    <td>{$g.id}</td>
+                    <td class="text-left">
+	                    <div>ID：{$g.member_id}</div>
+	                    <a href="{url('member/index', ['id'=>$g.member_id])}" target="_blank">{$g.wallet}</a>
+	                    <!--{if $g.member_name!=''}<div>账号：{$g.member_name}</div>{/if}
+                        {if $g.member_mobile!=''}<div>手机：{$g.member_mobile}</div>{/if}
+                        {if $g.member_email!=''}<div>邮箱：{$g.member_email}</div>{/if}-->
+                    </td>
+                    <td class="text-left">
+                        {$g.withdraw_wallet}
+                    </td>
+                    <td>
+                        {$g::getTypes($g.type)}
+                    </td>
+                    <td>
+                        {$g.withdraw_money}
+                    </td>
+                    <td>
+                        {$g.withdraw_fee}
+                    </td>
+                    <td>
+                        {:bcsub(strval($g.withdraw_money), strval($g.withdraw_fee), 2)}
+                    </td>
+                    <td>
+                        {if $g.status == 0}<span class="btn btn-xs btn-default">等待处理</span>
+                        {elseif $g.status == 1}<span class="btn btn-xs btn-success">提现成功</span>
+                        {elseif $g.status == -1}<span class="btn btn-xs btn-danger">提现失败</span>
+                        {/if}
+                    </td>
+					<!--<td>
+						{$g.audit_memo}
+					</td>-->
+                    <td>
+                        {:date('Y-m-d H:i', $g.add_time)}
+                    </td>
+					<!--<td>
+						{if $g.audit_time}{:date('Y-m-d H:i', $g.audit_time)}{else}-{/if}
+					</td>-->
+                    <td>
+                        {if $g.status == 0}
+	                    <a href="{url('money/withdraw_resolve', ['id'=>$g.id])}" class="btn btn-xs btn-success">通过申请</a>
+                        <a href="{url('money/withdraw_reject', ['id'=>$g.id])}" class="btn btn-xs btn-danger">拒绝申请</a>
+                        <!--<a data-url="{url('money/withdraw_reject', ['id'=>$g.id])}" onclick="main.modalView(this, {
+							title: '拒绝申请理由',
+							item: [
+								{ name:'audit_memo', require: true, placeholder: '请填写拒绝申请的理由', },
+								{ name:'return_money', type: 'checkbox', item: [{ value:1, text:'退回金额', checked:true }] },
+							],
+							post: true
+                        })" class="btn btn-xs btn-danger">拒绝申请</a>-->
+                        {/if}
+                    </td>
+                </tr>
+                {/foreach}
+                {else}
+                <tr class="text-center">
+                    <td colspan="10">暂无数据</td>
+                </tr>
+                {/if}
+	            </tbody>
+	        </table>
+        </div>
+        <div class="page">
+            {$list|raw}
+        </div>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+
+{/block}

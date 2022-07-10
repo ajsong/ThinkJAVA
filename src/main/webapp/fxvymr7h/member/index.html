@@ -1,0 +1,205 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+{block name="content"}
+
+<section class="panel">
+    <header class="panel-heading">
+	    <a type="button" href="/gm/member/add" class="btn btn-info pull-right">添加会员</a>
+	    <!--<button type="button" class="btn btn-success pull-right" id="export">导出</button>-->
+        <h4>会员列表</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-block" action="">
+            <div class="form-group">
+                <div class="col-sm-2 no-pd-r">
+                    <input type="text" id="keyword" value="{$Request.get.keyword}" name="keyword" class="form-control" placeholder="关键词">
+                </div>
+                <div class="col-sm-1 no-pd-r">
+                    <select name="grade_id" class="form-control">
+                        <option value="">等级</option>
+                         {foreach $grade as $g}
+                         <option value="{$g.id}" {if $Request.get.grade_id==$g.id}selected{/if}>{$g.name}</option>
+                         {/foreach}
+                    </select>
+                </div>
+                <div class="col-sm-1">
+	                <button type="submit" class="btn btn-color">搜索</button>
+                </div>
+            </div>
+        </form>
+        <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin">
+	            <thead>
+	            <tr>
+	                <th>ID</th>
+	                <th class="text-left">账号</th>
+	                <th class="text-left">上级</th>
+	                <th>邀请码</th>
+	                <th>等级</th>
+	                <th>USDT</th>
+	                <th>积分</th>
+	                <th>直推人数</th>
+	                <th>状态</th>
+	                <th class="text-left">注册时间</th>
+	                <th>操作</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {if count($list)}
+	            {foreach $list as $g}
+	            <tr>
+	                <td>
+	                    {$g.id}
+	                </td>
+	                <td class="text-left">
+		                <div>ID：{$g.id}</div>
+		                {if $g.wallet}<a href="{url('member/edit', ['id'=>$g.id])}">{$g.wallet}</a>
+		                {else}-{/if}
+	                </td>
+		            <!--<td class="text-left">
+						{if $g.name!=''}<div>账号：{$g.name}</div>{/if}
+						{if $g.mobile!=''}<div>手机：{$g.mobile}</div>{/if}
+						{if $g.email!=''}<div>邮箱：{$g.email}</div>{/if}
+					</td>-->
+	                <td class="text-left">
+	                    {if $g.parent_wallet}
+		                <div>ID：{$g.parent_id}</div>
+		                <a href="{url('member/index', ['id'=>$g.parent_id])}">{$g.parent_wallet}</a>
+		                {else}-{/if}
+	                </td>
+		            <!--<td class="text-left">
+						{if $g.parent_id>0}
+						<div>ID：{$g.parent_id}</div>
+						{if $g.parent_name!=''}<div>账号：{$g.parent_name}</div>{/if}
+						{if $g.parent_mobile!=''}<div>手机：{$g.parent_mobile}</div>{/if}
+						{if $g.parent_email!=''}<div>邮箱：{$g.parent_email}</div>{/if}
+						{else}
+						-
+						{/if}
+					</td>-->
+	                <td>
+	                    {$g.invite_code}
+	                </td>
+	                <td>
+	                    {if $g.grade_id==1}<div class="gray">{$g.grade_name}</div>{else}{$g.grade_name}{/if}
+	                </td>
+	                <td>
+	                    {$g.money}
+	                </td>
+	                <td>
+	                    {$g.integral}
+	                </td>
+	                <td>
+	                    {$g.children}人
+	                </td>
+	                <td>
+	                    {if $g.status == 1}<a class="btn btn-xs btn-success">正常</a>
+	                    {else}<a class="btn btn-xs btn-danger">冻结</a>{/if}
+	                </td>
+	                <td class="text-left">
+		                <div>时间：{:date('Y-m-d H:i', $g.reg_time)}</div>
+		                <div>IP：{$g.reg_ip}</div>
+	                </td>
+	                <td>
+	                    <a href="{url('member/index', ['parent_id'=>$g.id])}" class="btn btn-xs btn-success">查看下级</a>
+	                    <a href="{url('blind/index', ['member_id'=>$g.id])}" class="btn btn-xs btn-purple">盲盒订单</a>
+	                    <a href="{url('member/recharge', ['member_id'=>$g.id])}" class="btn btn-xs btn-success">充值</a>
+	                    <a href="{url('member/edit', ['id'=>$g.id])}" class="btn btn-xs btn-info">修改</a>
+	                    {if $g.status == 0}
+	                    <a data-url="{url('member/freeze', ['id'=>$g.id, 'status'=>1])}" onclick="main.ajaxDelete(this)" data-msg="确定要激活该会员吗？" class="btn btn-xs btn-warning">激活</a>
+	                    {else}
+	                    <a data-url="{url('member/freeze', ['id'=>$g.id, 'status'=>0])}" onclick="main.ajaxDelete(this)" data-msg="确定要冻结该会员吗？" class="btn btn-xs btn-warning">冻结</a>
+	                    {/if}
+		                <!--<a data-url="{url('member/delete',['id'=>$g.id])}" onclick="main.ajaxDelete(this)" data-msg="确定要删除该会员吗？" class="btn btn-xs btn-danger">删除</a>-->
+	                </td>
+	            </tr>
+	            {/foreach}
+	            {literal}
+	            <tr class="template">
+	                <td>
+	                    {$g.id}
+	                </td>
+	                <td class="text-left">
+		                <div>ID：{$g.id}</div>
+		                {if $g.wallet}<a href="/gm/member/edit?id={$g.id}">{$g.wallet}</a>
+		                {else}-{/if}
+	                </td>
+		            <!--<td class="text-left">
+						{if $g.name!=''}<div>账号：{$g.name}</div>{/if}
+						{if $g.mobile!=''}<div>手机：{$g.mobile}</div>{/if}
+						{if $g.email!=''}<div>邮箱：{$g.email}</div>{/if}
+					</td>-->
+	                <td class="text-left">
+	                    {if $g.parent_wallet}
+		                <div>ID：{$g.parent_id}</div>
+		                <a href="/gm/member/index?id={$g.parent_id}">{$g.parent_wallet}</a>
+		                {else}-{/if}
+	                </td>
+		            <!--<td class="text-left">
+						{if $g.parent_id>0}
+						<div>ID：{$g.parent_id}</div>
+						{if $g.parent_name!=''}<div>账号：{$g.parent_name}</div>{/if}
+						{if $g.parent_mobile!=''}<div>手机：{$g.parent_mobile}</div>{/if}
+						{if $g.parent_email!=''}<div>邮箱：{$g.parent_email}</div>{/if}
+						{else}
+						-
+						{/if}
+					</td>-->
+	                <td>
+	                    {$g.invite_code}
+	                </td>
+	                <td>
+	                    {if $g.grade_id==1}<div class="gray">{$g.grade_name}</div>{else}{$g.grade_name}{/if}
+	                </td>
+	                <td>
+	                    {$g.money}
+	                </td>
+	                <td>
+	                    {$g.integral}
+	                </td>
+	                <td>
+	                    {$g.children}人
+	                </td>
+	                <td>
+	                    {if $g.status == 1}<a class="btn btn-xs btn-success">正常</a>
+	                    {else}<a class="btn btn-xs btn-danger">冻结</a>{/if}
+	                </td>
+	                <td class="text-left">
+		                <div>时间：{$g.reg_time.formatDate('yyyy-mm-dd hh:ii')}</div>
+		                <div>IP：{$g.reg_ip}</div>
+	                </td>
+	                <td>
+	                    <a href="/gm/member/index?parent_id={$g.id}" class="btn btn-xs btn-success">查看下级</a>
+	                    <a href="/gm/blind/index?member_id={$g.id}" class="btn btn-xs btn-purple">盲盒订单</a>
+	                    <a href="/gm/member/recharge?member_id={$g.id}" class="btn btn-xs btn-success">充值</a>
+	                    <a href="/gm/member/edit?id={$g.id}" class="btn btn-xs btn-info">修改</a>
+	                    {if $g.status == 0}
+	                    <a data-url="/gm/member/freeze?id={$g.id}&status=1" onclick="main.ajaxDelete(this)" data-msg="确定要激活该会员吗？" class="btn btn-xs btn-warning">激活</a>
+	                    {else}
+	                    <a data-url="/gm/member/freeze?id={$g.id}&status=0" onclick="main.ajaxDelete(this)" data-msg="确定要冻结该会员吗？" class="btn btn-xs btn-warning">冻结</a>
+	                    {/if}
+		                <!--<a data-url="{url('member/delete',['id'=>$g.id])}" onclick="main.ajaxDelete(this)" data-msg="确定要删除该会员吗？" class="btn btn-xs btn-danger">删除</a>-->
+	                </td>
+	            </tr>
+	            {/literal}
+	            {else}
+	            <tr class="text-center">
+	                <td colspan="12">暂无数据</td>
+	            </tr>
+	            {/if}
+	            </tbody>
+	        </table>
+        </div>
+        <div class="page">
+            {$list|raw}
+        </div>
+    </div>
+</section>
+{/block}
+
+{block name="footer"}
+
+{/block}

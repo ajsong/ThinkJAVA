@@ -1,0 +1,137 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+	    <!--<button type="button" class="btn btn-primary pull-right" coo-click="addRow">添加等级</button>-->
+        <h4>会员等级</h4>
+    </header>
+    <div class="panel-body">
+	    <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin" data-save-validate-field="name" data-save="{url('grade_edit')}" data-save-all="{url('grade_edit_all')}">
+	            <thead>
+	            <tr>
+	                <th>名称</th>
+	                <th>价格</th>
+	                <th>级别收益</th>
+	                <th>平级收益</th>
+	                <th>购买后上级收益</th>
+	                <th>数量</th>
+	                <th>升级条件(下级人数)</th>
+	                <!--<th width="120">状态</th>
+	                <th width="120">排序</th>-->
+	                <th>操作</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {foreach $list as $g}
+	            <tr>
+	                <td>
+	                    <input type="text" class="form-control text-center" name="name" value="{$g.name}" {if $g.id==1}disabled{/if}>
+	                </td>
+	                <td>
+	                    <input type="number" class="form-control text-center" name="price" value="{$g.price}" {if $g.id==1 || $g.id==3 || $g.id==4 || $g.id==5 || $g.id==6}disabled{/if}>
+	                </td>
+	                <td>
+	                    <div class="form-control">
+		                    <input type="number" class="form-control text-center" name="level_percent" value="{$g.level_percent}" {if $g.id==1}disabled{/if}>
+		                    <div class="col-item">%</div>
+	                    </div>
+	                </td>
+	                <td>
+	                    <div class="form-control">
+		                    <input type="number" class="form-control text-center" name="line_percent" value="{$g.line_percent}" {if $g.id==1}disabled{/if}>
+		                    <div class="col-item">%</div>
+	                    </div>
+	                </td>
+	                <td>
+	                    <div class="form-control">
+		                    <input type="number" class="form-control text-center" name="recommend" value="{$g.recommend}" {if $g.id==1 || $g.id==3 || $g.id==4 || $g.id==5 || $g.id==6}disabled{/if}>
+		                    <div class="col-item">%</div>
+	                    </div>
+	                </td>
+	                <td>
+	                    <input type="number" class="form-control text-center" name="num" value="{$g.num}" {if $g.id==1 || $g.id==3 || $g.id==4 || $g.id==5 || $g.id==6}disabled{/if}>
+	                </td>
+	                <td>
+	                    <div class="form-control">
+		                    <input type="number" class="form-control text-center" name="person" value="{$g.person}" {if $g.id==1 || $g.id==2}disabled{/if}>
+		                    <div class="col-item">人</div>
+	                    </div>
+	                </td>
+	                <!--<td>
+		                <label class="checkbox-app"><input type="checkbox" name="status" {if $g.status==1}checked{/if}><i></i></label>
+	                </td>
+	                <td>
+	                    <input type="text" class="form-control text-center" name="sort" value="{$g.sort}" placeholder="越小越前">
+	                </td>-->
+	                <td>
+		                <input type="hidden" name="status" value="{$g.status}">
+		                <input type="hidden" name="sort" value="{$g.sort}">
+	                    <a data-save-id="{$g.id}" class="btn btn-xs btn-primary">修改</a>
+		                <!--<a data-url="{url('grade_delete', ['id'=>$g.id])}" onclick="main.ajaxDelete(this, deleteRow)" data-msg="确定要删除？" class="btn btn-xs btn-danger">删除</a>-->
+	                </td>
+	            </tr>
+	            {/foreach}
+	            </tbody>
+	        </table>
+	    </div>
+    </div>
+</section>
+{/block}
+
+{block name="footer"}
+<script>
+function addRow(){
+	let html = '<tr>\
+        <td>\
+            <input type="text" class="form-control text-center" name="name">\
+        </td>\
+        <td>\
+            <input type="number" class="form-control text-center" name="price">\
+        </td>\
+        <td>\
+            <div class="form-control">\
+                <input type="number" class="form-control text-center" name="level_percent">\
+                <div class="col-item">%</div>\
+            </div>\
+        </td>\
+        <td>\
+            <div class="form-control">\
+                <input type="number" class="form-control text-center" name="line_percent">\
+                <div class="col-item">%</div>\
+            </div>\
+        </td>\
+        <td>\
+            <div class="form-control">\
+                <input type="number" class="form-control text-center" name="recommend">\
+                <div class="col-item">%</div>\
+            </div>\
+        </td>\
+        <td>\
+            <input type="number" class="form-control text-center" name="num">\
+        </td>\
+        <td>\
+            <div class="form-control">\
+                <input type="number" class="form-control text-center" name="person">\
+                <div class="col-item">人</div>\
+            </div>\
+        </td>\
+        <td>\
+            <input type="hidden" name="status" value="1">\
+            <input type="hidden" name="sort" value="999">\
+            <a data-save-id class="btn btn-xs btn-primary">提交</a>\
+            <a onclick="deleteRow(this)" class="btn btn-xs btn-danger">删除</a>\
+        </td>\
+    </tr>';
+	$('.table tbody').append(html);
+}
+function deleteRow(e){
+	$(e).parent().parent().remove()
+}
+</script>
+{/block}

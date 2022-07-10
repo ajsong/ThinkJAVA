@@ -1,0 +1,96 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+        <h4>{if $row.id>0}编辑{else}添加{/if}会员</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-horizontal" method="post" onsubmit="return false" role="form">
+	        <input type="hidden" name="id" value="{$row.id}">
+	        <!--
+            <div class="form-group">
+                <label class="col-sm-2 control-label">账号</label>
+                <div class="col-sm-5">
+                    <input type="text" value="{$row.name}" name="name" class="form-control" placeholder="账号">
+                </div>
+            </div>
+	        
+            <div class="form-group">
+                <label class="col-sm-2 control-label">密码</label>
+                <div class="col-sm-5">
+                    <input type="text" name="password" class="form-control" placeholder="不修改请留空">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="col-sm-2 control-label">支付密码</label>
+                <div class="col-sm-5">
+                    <input type="text" name="pay_password" class="form-control" placeholder="不修改请留空" maxlength="6" onkeyup="value=value.replace(/\D/g,'')">
+                </div>
+            </div>
+	        
+            <div class="form-group">
+                <label class="col-sm-2 control-label">手机</label>
+                <div class="col-sm-5">
+                    <input type="text" value="{$row.mobile}" name="mobile" class="form-control" placeholder="手机">
+                </div>
+            </div>
+	        
+            <div class="form-group">
+                <label class="col-sm-2 control-label">邮箱</label>
+                <div class="col-sm-5">
+                    <input type="text" value="{$row.email}" name="email" class="form-control" placeholder="邮箱">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">昵称</label>
+                <div class="col-sm-5">
+                    <input type="text" value="{$row.nick_name}" name="nick_name" class="form-control" placeholder="昵称">
+                </div>
+            </div>
+            -->
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">会员钱包地址</label>
+                <div class="col-sm-5">
+                    <input type="text" value="{$row.wallet}" name="wallet" class="form-control" placeholder="会员钱包地址" {if $row.id>0}disabled{/if}>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">推荐人钱包地址</label>
+                <div class="col-sm-5">
+                    <input type="text" value="{$row.parent_wallet}" name="parent_wallet" class="form-control" {if $row.id>0}disabled{/if} placeholder="推荐人钱包地址">
+                </div>
+            </div>
+	        
+            <div class="form-group">
+                <label class="col-sm-2 control-label">等级</label>
+                 <div class="col-sm-5">
+                     <select name="grade_id" class="form-control">
+                         {foreach $grade as $g}
+                         <option {if $row.grade_id==$g.id}selected{/if} value="{$g.id}">{$g->name}</option>
+                         {/foreach}
+                     </select>
+                </div>
+            </div>
+	        
+            <div class="form-actions">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" data-url="{url('member/edit')}" onclick="main.ajaxForm(this)" class="btn btn-primary">提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+
+{/block}

@@ -1,0 +1,78 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+	    <a type="button" href="{url('article/add')}" class="btn btn-info pull-right">添加文章</a>
+        <h4>文章列表</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-block" action="">
+            <div class="form-group">
+                <div class="col-sm-2 no-pd-r">
+                    <input type="text" id="keyword" value="{$Request.get.keyword}" name="keyword" class="form-control" placeholder="关键词">
+                </div>
+                <div class="col-sm-2 no-pd-r">
+                    <select name="category_id" class="form-control">
+                        <option value="">分类</option>
+                        {foreach $category as $g}
+                        <option {if $Request.get.category_id==$g.id}selected{/if} value="{$g.id}">{$g.name}</option>
+                        {/foreach}
+                    </select>
+                </div>
+	            <div class="col-sm-1">
+                    <button type="submit" class="btn btn-color">搜索</button>
+	            </div>
+            </div>
+        </form>
+        <div class="panel-table">
+	        <table class="table table-bordered table-striped no-margin">
+	            <thead>
+	            <tr>
+	                <th>ID</th>
+	                <th class="text-left">标题</th>
+	                <th>类型</th>
+	                <th>状态</th>
+	                <th>创建时间</th>
+	                <th>操作</th>
+	            </tr>
+	            </thead>
+	            <tbody>
+	            {if count($list)}
+	            {foreach $list as $g}
+	            <tr>
+	                <td>{$g.id}</td>
+		            <td class="text-left"><a href="{url('article/edit', ['id'=>$g.id])}">{$g.title}</a></td>
+	                <td>{$g.category_name}</td>
+	                <td>
+	                    {if $g.status==1}<font class="fa fa-check"></font>{else}<font class="fa fa-close"></font>{/if}
+	                </td>
+	                <td>{:date('Y-m-d H:i', $g.add_time)}</td>
+	                <td>
+	                    <a href="{url('article/edit', ['id'=>$g.id])}" class="btn btn-xs btn-info">修改</a>
+	                    <a data-url="{url('article/delete', ['id'=>$g.id])}" onclick="main.ajaxDelete(this)" data-msg="确定要删除吗？" class="btn btn-xs btn-danger">删除</a>
+	                </td>
+	            </tr>
+	            {/foreach}
+	            {else}
+	            <tr class="text-center">
+	                <td colspan="12">暂无数据</td>
+	            </tr>
+	            {/if}
+	            </tbody>
+	        </table>
+        </div>
+        <div class="page">
+            {$list|raw}
+        </div>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+
+{/block}

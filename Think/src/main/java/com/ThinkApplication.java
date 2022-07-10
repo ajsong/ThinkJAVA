@@ -1,0 +1,364 @@
+package com;
+
+import com.alibaba.fastjson.*;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.system.ApplicationHome;
+import org.yaml.snakeyaml.Yaml;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.*;
+import java.sql.*;
+import java.util.*;
+import java.util.regex.*;
+
+@SpringBootApplication
+public class ThinkApplication {
+	
+	public static void main(String[] args) {
+		if (args.length > 0) {
+			String command = args[0];
+			String[] commands = command.split(":");
+			if (commands[0].equals("make")) {
+				if (commands.length > 1 && args.length > 1) {
+					String argument = args[1];
+					if (commands[1].equals("controller")) {
+						System.out.println("\033[32mmake:controller\033[m");
+						System.exit(0);
+					} else if (commands[1].equals("model")) {
+						boolean plain = (args.length > 2 && args[2].equals("--plain"));
+						String filepath = createInstanceFile(uncamelize(argument), plain);
+						System.out.println("model:\033[32m" + filepath + "\033[m created successfully.\n");
+						System.exit(0);
+					}
+				}
+			}
+		}
+		
+		System.out.println("\n\033[33mUsage:\033[m");
+		System.out.println("  command [arguments] [options]");
+		System.out.println("\n\033[33mOptions:\033[m");
+		System.out.println("  \033[32m--plain\033[m   Create the empty controller / no data field model class");
+		System.out.println("\n\033[33mAvailable commands:\033[m");
+		System.out.println(" \033[33mmake\033[m");
+		System.out.println("  \033[32mmake:controller\033[m   Create a new resource controller class");
+		System.out.println("  \033[32mmake:model\033[m        Create a new model class");
+		System.out.println();
+		System.exit(0);
+		
+		SpringApplication.run(ThinkApplication.class, args);
+	}
+	
+	public static String root_path() {
+		ApplicationHome ah = new ApplicationHome(ThinkApplication.class);
+		return ah.getSource().getParentFile().getPath().replaceAll("(/$)", "");
+	}
+	public static Map<String, Object> getYmls() {
+		return getYmls("file:///" + root_path() + "/src/main/resources/application.yml");
+	}
+	public static Map<String, Object> getYmls(String filename) {
+		try {
+			Yaml yaml = new Yaml();
+			URL url;
+			if (filename.startsWith("file:///")) {
+				filename = filename.replace("file:///", "");
+				String filepath;
+				if (filename.contains("/")) {
+					filepath = filename;
+				} else {
+					filepath = root_path() + filename;
+				}
+				if (!new File(filepath).exists()) return null;
+				url = new URL("file:///" + filepath);
+			} else {
+				url = ThinkApplication.class.getClassLoader().getResource(filename);
+			}
+			if (url == null) return null;
+			Map<String, Object> map = new LinkedHashMap<>();
+			JSONObject obj = JSONObject.parseObject(JSON.toJSONString(yaml.load(Files.newInputStream(Paths.get(url.getFile())))));
+			setYmlInline(obj, "", map);
+			return map;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	private static void setYmlInline(JSONObject obj, String tmpKey, Map<String, Object> map) {
+		for (String key : obj.keySet()) {
+			String value = obj.getString(key);
+			Object res;
+			try {
+				res = JSONObject.parse(value);
+			} catch (Exception e) {
+				//如果解析出错，就说明已经到头了，放入map然后继续解析
+				map.put(tmpKey + key, json_decode(value));
+				continue;
+			}
+			//如果是集合，需要特殊解析
+			if (res instanceof Collection<?>) {
+				List<?> list = (List<?>) res;
+				for (int i = 0; i < list.size(); i++) {
+					String itemKey = tmpKey + key + "[" + i + "]" + ".";
+					if (list.get(i) instanceof JSONObject) {
+						JSONObject itemValue = (JSONObject) list.get(i);
+						setYmlInline(itemValue, itemKey, map);
+					} else {
+						map.put(tmpKey + key, json_decode(value));
+					}
+				}
+			} else if (res instanceof JSONObject) {
+				JSONObject json = JSONObject.parseObject(value);
+				setYmlInline(json, tmpKey + key + ".", map);
+			} else {
+				map.put(tmpKey + key, json_decode(value));
+			}
+		}
+	}
+	@SuppressWarnings("unchecked")
+	public static <T> T getYml(String key, T defaultValue) {
+		if (defaultValue == null) defaultValue = (T) new Object();
+		return getYml(key, defaultValue, defaultValue.getClass());
+	}
+	@SuppressWarnings("unchecked")
+	public static <T> T getYml(String key, T defaultValue, Class<?> clazz) {
+		Map<String, Object> map = getYmls();
+		if (map == null) return defaultValue;
+		Object res = map.get(key);
+		if (res == null) return defaultValue;
+		if (clazz == Integer.class) {
+			res = Integer.parseInt(String.valueOf(res));
+		} else if (clazz == Long.class) {
+			res = Long.parseLong(String.valueOf(res));
+		} else if (clazz == Float.class) {
+			res = Float.parseFloat(String.valueOf(res));
+		} else if (clazz == Double.class) {
+			res = Double.parseDouble(String.valueOf(res));
+		} else if (clazz == Boolean.class) {
+			res = String.valueOf(res).equalsIgnoreCase("true");
+		} else if (clazz == String.class) {
+			if (String.valueOf(res).length() == 0) return defaultValue;
+		}
+		return (T) res;
+	}
+	public static String camelize(String value) {
+		StringBuilder res = new StringBuilder();
+		String[] words = value.replaceAll("_", " ").split(" ");
+		for (String word : words) {
+			res.append(word.substring(0, 1).toUpperCase()).append(word.substring(1));
+		}
+		return res.toString();
+	}
+	public static String uncamelize(String value) {
+		return value.replaceAll("\\s+", "").replaceAll("(.)(?=[A-Z])", "$1_").toLowerCase();
+	}
+	@SuppressWarnings("unchecked")
+	public static <T> T json_decode(String value) {
+		if (value == null || value.length() == 0) return null;
+		if (value.contains("=>")) {
+			Matcher matcher = Pattern.compile("(['\"])(\\w+)\\1\\s*=>").matcher(value.replace("[", "{").replace("]", "}"));
+			StringBuffer str = new StringBuffer();
+			while (matcher.find()) {
+				matcher.appendReplacement(str, "\""+matcher.group(2)+"\":");
+			}
+			matcher.appendTail(str);
+			matcher = Pattern.compile("'([^']+)'\\s*([,}])").matcher(str.toString());
+			str = new StringBuffer();
+			while (matcher.find()) {
+				matcher.appendReplacement(str, "\""+matcher.group(1)+"\""+matcher.group(2)+"");
+			}
+			matcher.appendTail(str);
+			matcher = Pattern.compile("\\{(\\s*\"[^\"]+\"(\\s*,\\s*\"[^\"]+\")*\\s*)}").matcher(str.toString());
+			str = new StringBuffer();
+			while (matcher.find()) {
+				matcher.appendReplacement(str, "["+matcher.group(1)+"]");
+			}
+			matcher.appendTail(str);
+			value = str.toString();
+		}
+		if (Pattern.compile("^\\[.*]$").matcher(value).find()) {
+			return (T) JSONObject.parseArray(value);
+		} else if (Pattern.compile("^\\{.*}$").matcher(value).find()) {
+			return (T) JSON.parseObject(value);
+		}
+		return (T) value;
+	}
+	
+	//生成实例class文件
+	public static Connection ConnInit() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			return DriverManager.getConnection(getYml("spring.datasource.url", ""), getYml("spring.datasource.username", ""), getYml("spring.datasource.password", ""));
+		} catch (Exception e) {
+			System.out.println("SQL驱动程序初始化失败：" + e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
+	}
+	//Db.createInstanceFile("member");
+	public static String createInstanceFile(String table, boolean plain) {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			String clazz = camelize(table);
+			StringBuilder sb = new StringBuilder("package com.app.model;\n\nimport com.framework.tool.*;\nimport java.util.*;\n\n")
+					.append("public class ").append(clazz).append(" extends Core {\n\n");
+			if (!plain) {
+				StringBuilder method = new StringBuilder();
+				String sql = "SHOW COLUMNS FROM " + getYml("spring.datasource.prefix", "") + table;
+				conn = ConnInit();
+				assert conn != null;
+				ps = conn.prepareStatement(sql);
+				ResultSet rs = ps.executeQuery();
+				while (rs.next()) {
+					String field = rs.getString("Field");
+					String type = rs.getString("Type");
+					if (type.startsWith("int(")) type = "Integer";
+					else if (type.startsWith("varchar(") || type.equals("text")) type = "String";
+					else if (type.startsWith("decimal(")) type = "Double";
+					sb.append("\tpublic ").append(type).append(" ").append(field).append(";\n");
+					String Field = Character.toUpperCase(field.charAt(0)) + field.substring(1);
+					method.append("\n\tpublic ").append(type).append(" get").append(Field).append("() {\n\t\treturn ").append(field).append(";\n\t}\n");
+					method.append("\tpublic void set").append(Field).append("(").append(type).append(" ").append(field).append(") {\n\t\tthis.")
+							.append(field).append(" = ").append(field).append(";\n\t}\n");
+				}
+				sb.append(method);
+			}
+			sb.append("\n\t//数据库操作(自动设定表名)===================================================\n" +
+					"\tpublic static String tablename() {\n" +
+					"\t\tString clazz = new Object() {\n" +
+					"\t\t\tpublic String get() {\n" +
+					"\t\t\t\tString clazz = this.getClass().getName();\n" +
+					"\t\t\t\treturn clazz.substring(0, clazz.lastIndexOf('$'));\n" +
+					"\t\t\t}\n" +
+					"\t\t}.get();\n" +
+					"\t\treturn Common.uncamelize(clazz.substring(clazz.lastIndexOf(\".\")+1));\n" +
+					"\t}\n" +
+					"\tpublic static Db leftJoin(String table, String on) {\n" +
+					"\t\treturn Db.name(tablename()).leftJoin(table, on);\n" +
+					"\t}\n" +
+					"\tpublic static Db rightJoin(String table, String on) {\n" +
+					"\t\treturn Db.name(tablename()).rightJoin(table, on);\n" +
+					"\t}\n" +
+					"\tpublic static Db innerJoin(String table, String on) {\n" +
+					"\t\treturn Db.name(tablename()).innerJoin(table, on);\n" +
+					"\t}\n" +
+					"\tpublic static Db crossJoin(String table) {\n" +
+					"\t\treturn Db.name(tablename()).crossJoin(table);\n" +
+					"\t}\n" +
+					"\tpublic static Db where(Object where, Object...whereParams) {\n" +
+					"\t\treturn Db.name(tablename()).where(where, whereParams);\n" +
+					"\t}\n" +
+					"\tpublic static Db whereOr(Object where, Object...whereParams) {\n" +
+					"\t\treturn Db.name(tablename()).whereOr(where, whereParams);\n" +
+					"\t}\n" +
+					"\tpublic static Db field(Object field) {\n" +
+					"\t\treturn Db.name(tablename()).field(field);\n" +
+					"\t}\n" +
+					"\tpublic static Db distinct(String field) {\n" +
+					"\t\treturn Db.name(tablename()).distinct(field);\n" +
+					"\t}\n" +
+					"\tpublic static Db whereTime(String interval, String field, String operatorAndValue) {\n" +
+					"\t\treturn Db.name(tablename()).whereTime(interval, field, operatorAndValue);\n" +
+					"\t}\n" +
+					"\tpublic static Db whereTime(String interval, String field, String operatorAndValue, String now) {\n" +
+					"\t\treturn Db.name(tablename()).whereTime(interval, field, operatorAndValue, now);\n" +
+					"\t}\n" +
+					"\tpublic static Db like(String field, String str) {\n" +
+					"\t\treturn Db.name(tablename()).like(field, str);\n" +
+					"\t}\n" +
+					"\tpublic static Db like(String field, String str, String escape) {\n" +
+					"\t\treturn Db.name(tablename()).like(field, str, escape);\n" +
+					"\t}\n" +
+					"\tpublic static Db order(String field) {\n" +
+					"\t\treturn Db.name(tablename()).order(field);\n" +
+					"\t}\n" +
+					"\tpublic static Db order(String field, String order) {\n" +
+					"\t\treturn Db.name(tablename()).order(field, order);\n" +
+					"\t}\n" +
+					"\tpublic static Db orderField(String field, String value) {\n" +
+					"\t\treturn Db.name(tablename()).orderField(field, value);\n" +
+					"\t}\n" +
+					"\tpublic static Db group(String group) {\n" +
+					"\t\treturn Db.name(tablename()).group(group);\n" +
+					"\t}\n" +
+					"\tpublic static Db having(String having) {\n" +
+					"\t\treturn Db.name(tablename()).having(having);\n" +
+					"\t}\n" +
+					"\tpublic static Db offset(int offset) {\n" +
+					"\t\treturn Db.name(tablename()).offset(offset);\n" +
+					"\t}\n" +
+					"\tpublic static Db pagesize(int pagesize) {\n" +
+					"\t\treturn Db.name(tablename()).pagesize(pagesize);\n" +
+					"\t}\n" +
+					"\tpublic static Db limit(int offset, int pagesize) {\n" +
+					"\t\treturn Db.name(tablename()).limit(offset, pagesize);\n" +
+					"\t}\n" +
+					"\tpublic static Db cached(int cached) {\n" +
+					"\t\treturn Db.name(tablename()).cached(cached);\n" +
+					"\t}\n" +
+					"\tpublic static Db pagination(boolean pagination) {\n" +
+					"\t\treturn Db.name(tablename()).pagination(pagination);\n" +
+					"\t}\n" +
+					"\tpublic static Db pagination(boolean pagination, String paginationMark) {\n" +
+					"\t\treturn Db.name(tablename()).pagination(pagination, paginationMark);\n" +
+					"\t}\n" +
+					"\tpublic static Db fetchSql() {\n" +
+					"\t\treturn Db.name(tablename()).fetchSql();\n" +
+					"\t}\n" +
+					"\tpublic static DataList select(Object field) {\n" +
+					"\t\treturn Db.name(tablename()).select(field);\n" +
+					"\t}\n" +
+					"\tpublic static DataList select() {\n" +
+					"\t\treturn Db.name(tablename()).select();\n" +
+					"\t}\n" +
+					"\tpublic static int insert(String data, Object...dataParams) {\n" +
+					"\t\treturn Db.name(tablename()).insert(data, dataParams);\n" +
+					"\t}\n" +
+					"\tpublic static int insert(List<String> data, Object...dataParams) {\n" +
+					"\t\treturn Db.name(tablename()).insert(data, dataParams);\n" +
+					"\t}\n" +
+					"\tpublic static int insert(String[] data, Object...dataParams) {\n" +
+					"\t\treturn Db.name(tablename()).insert(data, dataParams);\n" +
+					"\t}\n" +
+					"\tpublic static int insert(Map<String, Object> datas) {\n" +
+					"\t\treturn Db.name(tablename()).insert(datas);\n" +
+					"\t}\n" +
+					"\tpublic static int insert(String[] data, List<Object> dataParams) {\n" +
+					"\t\treturn Db.name(tablename()).insert(data, dataParams);\n" +
+					"\t}\n" +
+					"\tpublic static int insertGetId(String data, Object...dataParams) {\n" +
+					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
+					"\t}\n" +
+					"\tpublic static int insertGetId(List<String> data, Object...dataParams) {\n" +
+					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
+					"\t}\n" +
+					"\tpublic static int insertGetId(String[] data, Object...dataParams) {\n" +
+					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
+					"\t}\n" +
+					"\tpublic static int insertGetId(Map<String, Object> datas) {\n" +
+					"\t\treturn Db.name(tablename()).insertGetId(datas);\n" +
+					"\t}\n" +
+					"\tpublic static int insertGetId(String[] data, List<Object> dataParams) {\n" +
+					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
+					"\t}\n");
+			sb.append("\n}");
+			String filepath = root_path() + "/src/main/java/com/app/model/" + clazz + ".java";
+			FileWriter writer = new FileWriter(filepath);
+			writer.write(sb.toString());
+			writer.close();
+			return filepath;
+		} catch (Exception e) {
+			System.out.println("生成实例class文件异常");
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null) ps.close();
+				if (conn != null) conn.close();
+			} catch (Exception e) {
+				//e.printStackTrace();
+			}
+		}
+		return null;
+	}
+	
+}

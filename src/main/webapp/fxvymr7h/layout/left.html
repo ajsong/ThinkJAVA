@@ -1,0 +1,44 @@
+
+<aside class="sidebar collapsible canvas-left">
+    <div class="scroll-menu">
+        <nav class="main-navigation slimscroll" data-height="auto" data-size="4px" data-color="#ddd" data-distance="0">
+            <ul class="left-menu">
+                <li><a href="{url('index/index')}"><i class="fa fa-home"></i><span>后台首页</span></a></li>
+                {foreach:$leftMenu as $g}
+                <li class="dropdown">
+                    <a href="javascript:void(0)" data-toggle="dropdown">
+                        <i class="{$g->icon}"></i><span>{$g->name}</span><i class="toggle-accordion"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        {foreach:$g.children as $child}
+                        <li {if checkMenuPath($child->path)}class="active"{/if}>
+                            <a href="{$child->path}">
+                                <span>{$child->name}</span>
+                            </a>
+                        </li>
+                        {/foreach:$g.children}
+                    </ul>
+                </li>
+                {/foreach:$leftMenu}
+            </ul>
+        </nav>
+    </div>
+    <footer>
+        <div class="footer-toolbar pull-left">
+            <a href="javascript:void(0)" class="toggle-sidebar pull-right hidden-xs">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        </div>
+    </footer>
+</aside>
+<script>
+$(function() {
+    $('.left-menu .dropdown').each(function() {
+	    if ($(this).find('li').hasClass('active')) {
+		    $(this).addClass('collapse-open');
+	    } else {
+		    $(this).removeClass('collapse-open');
+	    }
+    })
+})
+</script>

@@ -1,0 +1,133 @@
+{extend name="layout/main" /}
+
+{block name="header"}
+<style>
+.auths td{height: 70px;}
+.auths .checkbox{padding-top: 0;}
+</style>
+{/block}
+
+{block name="content"}
+<section class="panel">
+    <header class="panel-heading">
+        <h4>编辑分组</h4>
+    </header>
+    <div class="panel-body">
+        <form class="form-horizontal" onsubmit="return false" role="form">
+	        <input type="hidden" name="id" value="{$row.id}">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-5">
+                    <input type="text" name="name" value="{$row.name}" class="form-control" placeholder="请输入名称">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">选择权限</label>
+                <div class="col-sm-10">
+	                <input type="checkbox" data-type="checkbox" data-text="全部选择" class="selectAll" onclick="selectAll(this)" {if $row.menu=='all'}checked{/if}>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label"></label>
+                <div class="col-sm-8">
+                    <table class="table table-bordered no-margin">
+	                    <thead>
+	                        <tr>
+		                        <th width="33%">根菜单</th>
+		                        <th width="33%">子菜单</th>
+		                        <th>权限</th>
+	                        </tr>
+	                    </thead>
+                        {foreach $menu as $g}
+                        {if $g.level == 1}
+                        <tbody>
+                            <tr>
+                                <td rowspan="{$g->getChildTotal()}">
+	                                <input type="checkbox" data-type="checkbox" data-text="{$g.name}" data-noLeft="true" name="menu[]" value="{$g.id}" onclick="selectChilds(this)" {if in_array($g.id, $menus) || $row.menu=='all'}checked{/if}>
+                                </td>
+                            </tr>
+                            {assign name="loop" value="0"}
+                            {foreach $menu as $child}
+                            {if $child.parent_id == $g.id}
+                            <tr>
+                                <td>
+	                                <input type="checkbox" data-type="checkbox" data-text="{$child.name}" data-noLeft="true" name="menu[]" value="{$child.id}" onclick="selectActions(this)" {if in_array($child.id, $menus) || $row.menu=='all'}checked{/if}>
+                                </td>
+	                            {if $loop == 0}
+                                <td rowspan="{$g->getChildTotal()}">
+                                    {if isset($permission[$g.path]) && count($permission[$g.path])}
+	                                {foreach $permission[$g.path] as $p}
+	                                <div style="width:100%;overflow:hidden;">
+		                                <input type="checkbox" data-type="checkbox" data-text="{$p.title}" name="permission[]" value="{$p.key}" {if $p.checked==1}checked{/if}>
+	                                </div>
+	                                {/foreach}
+	                                {else}
+	                                -
+	                                {/if}
+                                </td>
+	                            {/if}
+                            </tr>
+                            <!--{$loop++}-->
+                            {/if}
+                            {/foreach}
+                        </tbody>
+                        {/if}
+                        {/foreach}
+                    </table>
+                </div>
+            </div>
+            <div class="form-actions">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" data-url="{url('manage/group_edit')}" onclick="main.ajaxForm(this)" class="btn btn-primary">提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{/block}
+
+
+{block name="footer"}
+<script>
+function selectAll(e) {
+    if ($(e).is(':checked')) {
+        $('.table').find('input').prop('checked', true);
+    } else {
+        $('.table').find('input').prop('checked', false);
+    }
+}
+function selectChilds(e) {
+    if ($(e).is(':checked')) {
+        $(e).parents('tr').siblings('tr').each(function() {
+			$(this).find('td:eq(0)').find('input').prop('checked', true);
+        });
+    } else {
+        if ($('.selectAll').is(':checked')) {
+            $('.selectAll').prop('checked', false);
+        }
+        $(e).parents('tr').siblings('tr').each(function() {
+	        $(this).find('td:eq(0)').find('input').prop('checked', false);
+        });
+    }
+}
+
+function selectActions(e) {
+    let parentsNode = $(e).parents('tbody').find('tr:first input');
+    if ($(e).is(':checked')) {
+        if (!parentsNode.is(':checked')) {
+            parentsNode.prop('checked', true);
+        }
+    } else {
+        let total = 0;
+        $(e).parents('tbody').find('tr').each(function() {
+            if ($(this).find('td:eq(0)').find('input').is(':checked')) {
+                total++;
+            }
+        })
+        if (total <= 1) {
+            parentsNode.prop('checked', false);
+        }
+    }
+}
+</script>
+{/block}
