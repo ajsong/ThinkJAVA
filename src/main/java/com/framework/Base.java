@@ -89,6 +89,27 @@ public class Base {
 		return this.appKeepRunning;
 	}
 	
+	public long time() {
+		return Common.time();
+	}
+	public String date(String format) {
+		return Common.date(format);
+	}
+	public String date(String format, String timestamp) {
+		return Common.date(format, timestamp);
+	}
+	public String date(String format, long timestamp) {
+		return Common.date(format, timestamp);
+	}
+	public String timetostr(String mark) {
+		return Common.timetostr(mark);
+	}
+	public String timetostr(String mark, String timestamp) {
+		return Common.timetostr(mark, timestamp);
+	}
+	public String timetostr(String mark, long timestamp) {
+		return Common.timetostr(mark, timestamp);
+	}
 	public Object session(String key) {
 		return Common.session(key);
 	}

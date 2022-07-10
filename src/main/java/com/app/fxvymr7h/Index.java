@@ -8,8 +8,8 @@ public class Index extends Core {
 	public Object index() {
 		//会员数量
 		Map<String, Object> map = new HashMap<>();
-		map.put("total", Db.name("member").count());
-		map.put("today", Db.name("member").where("reg_time>=? and reg_time<=?", Common.date("Y-m-d 00:00:00"), Common.date("Y-m-d 23:59:59")).count());
+		map.put("total", com.app.model.Member.count());
+		map.put("today", com.app.model.Member.whereTime("reg_time", "today").count());
 		return this.render(new HashMap<String, Object>(){
 			{
 				put("user", map);

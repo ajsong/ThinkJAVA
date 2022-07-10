@@ -26,8 +26,8 @@ public class ThinkApplication {
 						System.out.println("\033[32mmake:controller\033[m");
 						System.exit(0);
 					} else if (commands[1].equals("model")) {
-						boolean plain = (args.length > 2 && args[2].equals("--plain"));
-						String filepath = createInstanceFile(uncamelize(argument), plain);
+						boolean detail = (args.length > 2 && args[2].equals("--detail"));
+						String filepath = createInstanceFile(uncamelize(argument), detail);
 						System.out.println("model:\033[32m" + filepath + "\033[m created successfully.\n");
 						System.exit(0);
 					}
@@ -38,7 +38,7 @@ public class ThinkApplication {
 		System.out.println("\n\033[33mUsage:\033[m");
 		System.out.println("  command [arguments] [options]");
 		System.out.println("\n\033[33mOptions:\033[m");
-		System.out.println("  \033[32m--plain\033[m   Create the empty controller / no data field model class");
+		System.out.println("  \033[32m--detail\033[m   Create the method controller / database field model class");
 		System.out.println("\n\033[33mAvailable commands:\033[m");
 		System.out.println(" \033[33mmake\033[m");
 		System.out.println("  \033[32mmake:controller\033[m   Create a new resource controller class");
@@ -195,14 +195,15 @@ public class ThinkApplication {
 		return null;
 	}
 	//Db.createInstanceFile("member");
-	public static String createInstanceFile(String table, boolean plain) {
+	public static String createInstanceFile(String table, boolean detail) {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			String clazz = camelize(table);
 			StringBuilder sb = new StringBuilder("package com.app.model;\n\nimport com.framework.tool.*;\nimport java.util.*;\n\n")
-					.append("public class ").append(clazz).append(" extends Core {\n\n");
-			if (!plain) {
+					.append("public class ").append(clazz).append(" extends Core {\n");
+			if (detail) {
+				sb.append("\n");
 				StringBuilder method = new StringBuilder();
 				String sql = "SHOW COLUMNS FROM " + getYml("spring.datasource.prefix", "") + table;
 				conn = ConnInit();
@@ -233,6 +234,9 @@ public class ThinkApplication {
 					"\t\t}.get();\n" +
 					"\t\treturn Common.uncamelize(clazz.substring(clazz.lastIndexOf(\".\")+1));\n" +
 					"\t}\n" +
+					"\tpublic static Db alias(String alias) {\n" +
+					"\t\treturn Db.name(tablename()).alias(alias);\n" +
+					"\t}\n" +
 					"\tpublic static Db leftJoin(String table, String on) {\n" +
 					"\t\treturn Db.name(tablename()).leftJoin(table, on);\n" +
 					"\t}\n" +
@@ -251,17 +255,23 @@ public class ThinkApplication {
 					"\tpublic static Db whereOr(Object where, Object...whereParams) {\n" +
 					"\t\treturn Db.name(tablename()).whereOr(where, whereParams);\n" +
 					"\t}\n" +
+					"\tpublic static Db whereDay(String field, String mark) {\n" +
+					"\t\treturn Db.name(tablename()).whereDay(field, mark);\n" +
+					"\t}\n" +
+					"\tpublic static Db whereTime(String field, String value) {\n" +
+					"\t\treturn Db.name(tablename()).whereTime(field, value);\n" +
+					"\t}\n" +
+					"\tpublic static Db whereTime(String field, String operator, String value) {\n" +
+					"\t\treturn Db.name(tablename()).whereTime(field, operator, value);\n" +
+					"\t}\n" +
+					"\tpublic static Db whereTime(String interval, String field, String operator, Object value) {\n" +
+					"\t\treturn Db.name(tablename()).whereTime(interval, field, operator, value);\n" +
+					"\t}\n" +
 					"\tpublic static Db field(Object field) {\n" +
 					"\t\treturn Db.name(tablename()).field(field);\n" +
 					"\t}\n" +
 					"\tpublic static Db distinct(String field) {\n" +
 					"\t\treturn Db.name(tablename()).distinct(field);\n" +
-					"\t}\n" +
-					"\tpublic static Db whereTime(String interval, String field, String operatorAndValue) {\n" +
-					"\t\treturn Db.name(tablename()).whereTime(interval, field, operatorAndValue);\n" +
-					"\t}\n" +
-					"\tpublic static Db whereTime(String interval, String field, String operatorAndValue, String now) {\n" +
-					"\t\treturn Db.name(tablename()).whereTime(interval, field, operatorAndValue, now);\n" +
 					"\t}\n" +
 					"\tpublic static Db like(String field, String str) {\n" +
 					"\t\treturn Db.name(tablename()).like(field, str);\n" +
@@ -304,6 +314,12 @@ public class ThinkApplication {
 					"\t}\n" +
 					"\tpublic static Db fetchSql() {\n" +
 					"\t\treturn Db.name(tablename()).fetchSql();\n" +
+					"\t}\n" +
+					"\tpublic static boolean exist() {\n" +
+					"\t\treturn Db.name(tablename()).exist();\n" +
+					"\t}\n" +
+					"\tpublic static int count() {\n" +
+					"\t\treturn Db.name(tablename()).count();\n" +
 					"\t}\n" +
 					"\tpublic static DataList select(Object field) {\n" +
 					"\t\treturn Db.name(tablename()).select(field);\n" +

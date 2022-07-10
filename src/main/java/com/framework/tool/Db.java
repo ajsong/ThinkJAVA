@@ -34,6 +34,7 @@ public class Db {
 	static PreparedStatement ps =  null;
 
 	private String table = "";
+	private String alias = "";
 	private List<String> left = null;
 	private List<String> right = null;
 	private List<String> inner = null;
@@ -124,7 +125,17 @@ public class Db {
 			table = table.substring(1);
 		}
 		if (restore) restore();
+		if (table.contains(" ")) {
+			String[] tables = table.split(" ");
+			table = tables[0];
+			this.alias = tables[1];
+		}
 		this.table = Db.replaceTable(table);
+		return this;
+	}
+	//表别名
+	public Db alias(String alias) {
+		this.alias = alias.length() > 0 ? alias : "";
 		return this;
 	}
 	//左联接
@@ -170,7 +181,7 @@ public class Db {
 			String[] items = new String[((String[]) where).length];
 			for (int i = 0; i < ((String[]) where).length; i++) {
 				String item = ((String[]) where)[i];
-				items[i] = item.contains("=") ? item : (item.contains(".") ? item + "=?" : "`" + item + "`=?");
+				items[i] = Pattern.compile("^[\\w.]+$").matcher(item).find() ? (item.contains(".") ? item + "=?" : "`" + item + "`=?") : item;
 			}
 			String w = StringUtils.join(items, " AND ");
 			if (andOr.equals(" OR ")) w = "(" + w + ")";
@@ -237,6 +248,65 @@ public class Db {
 		}
 		return this;
 	}
+	//时间对比查询
+	//whereDay("add_time", "today") //查询add_time今天的记录
+	public Db whereDay(String field, String mark) {
+		return whereTime(field, "=", Common.timetostr(mark));
+	}
+	//whereTime("add_time", "2022-7-10") //查询add_time等于指定日期的记录
+	public Db whereTime(String field, String value) {
+		return whereTime(field, "=", Common.timetostr(value));
+	}
+	//whereTime("add_time", "<", "2022-7-10") //查询add_time小于指定日期的记录
+	public Db whereTime(String field, String operator, String value) {
+		if (operator.contains("<")) {
+			long timestamp = Common.time(Common.date("Y-m-d 00:00:00", Common.time(value)));
+			this.where += (this.where.length() > 0 ? " AND " : "") + "`"+field+"`" + operator + timestamp;
+		} else if (operator.contains(">")) {
+			long timestamp = Common.time(Common.date("Y-m-d 23:59:59", Common.time(value)));
+			this.where += (this.where.length() > 0 ? " AND " : "") + "`"+field+"`" + operator + timestamp;
+		} else {
+			long start = Common.time(Common.date("Y-m-d 00:00:00", Common.time(value)));
+			long end = Common.time(Common.date("Y-m-d 23:59:59", Common.time(value)));
+			this.where += (this.where.length() > 0 ? " AND " : "") + "`"+field+"`>=" + start + " AND `"+field+"`<=" + end;
+		}
+		return this;
+	}
+	//whereTime("d", "add_time", "<", 1) //查询add_time小于1天的记录
+	public Db whereTime(String interval, String field, String operator, Object value) {
+		return whereTime(interval, field, operator, value, "");
+	}
+	public Db whereTime(String interval, String field, String operator, Object value, String now) {
+		switch (interval) {
+			case "y":interval = "YEAR";break;
+			case "q":interval = "QUARTER";break;
+			case "m":interval = "MONTH";break;
+			case "w":interval = "WEEK";break;
+			case "d":interval = "DAY";break;
+			case "h":interval = "HOUR";break;
+			case "n":interval = "MINUTE";break;
+			case "s":interval = "SECOND";break;
+		}
+		interval = interval.toUpperCase();
+		String his = "";
+		switch (interval) {
+			case "HOUR":his = " %H";break;
+			case "MINUTE":his = " %H:%i";break;
+			case "SECOND":his = " %H:%i:%s";break;
+		}
+		if (now.length() == 0) {
+			if (his.length() == 0) now = "DATE_FORMAT(NOW(),'%Y-%m-%d')";
+			else {
+				if (interval.equals("HOUR")) now = "DATE_FORMAT(NOW(),'%Y-%m-%d %H')";
+				else if (interval.equals("MINUTE")) now = "DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i')";
+				else now = "NOW()";
+			}
+		}
+		//fieldOpe = "IF(ISNUMERIC(" + field + "),FROM_UNIXTIME(" + field + ",'%Y-%m-%d" + his + "')," + field + ")";
+		String fieldOpe = "FROM_UNIXTIME(" + field + ",'%Y-%m-%d" + his + "')";
+		this.where += (this.where.length() > 0 ? " AND " : "") + "TIMESTAMPDIFF(" + interval + "," + fieldOpe + "," + now + ")" + operator + value;
+		return this;
+	}
 	//要查询的字段
 	//.field(new String[]{"id", "name"}) or .field("id, name")
 	@SuppressWarnings("unchecked")
@@ -287,41 +357,6 @@ public class Db {
 	//去重查询
 	public Db distinct(String field) {
 		this.distinct = "DISTINCT(" + field + ")";
-		return this;
-	}
-	//时间对比查询, .whereTime('d', 'add_time', '<1') //查询add_time小于1天的记录
-	public Db whereTime(String interval, String field, String operatorAndValue) {
-		return whereTime(interval, field, operatorAndValue, "");
-	}
-	public Db whereTime(String interval, String field, String operatorAndValue, String now) {
-		switch (interval) {
-			case "y":interval = "YEAR";break;
-			case "q":interval = "QUARTER";break;
-			case "m":interval = "MONTH";break;
-			case "w":interval = "WEEK";break;
-			case "d":interval = "DAY";break;
-			case "h":interval = "HOUR";break;
-			case "n":interval = "MINUTE";break;
-			case "s":interval = "SECOND";break;
-		}
-		interval = interval.toUpperCase();
-		String his = "";
-		switch (interval) {
-			case "HOUR":his = " %H";break;
-			case "MINUTE":his = " %H:%i";break;
-			case "SECOND":his = " %H:%i:%s";break;
-		}
-		if (now.length() == 0) {
-			if (his.length() == 0) now = "DATE_FORMAT(NOW(),'%Y-%m-%d')";
-			else {
-				if (interval.equals("HOUR")) now = "DATE_FORMAT(NOW(),'%Y-%m-%d %H')";
-				else if (interval.equals("MINUTE")) now = "DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i')";
-				else now = "NOW()";
-			}
-		}
-		//fieldOpe = "IF(ISNUMERIC(" + field + "),FROM_UNIXTIME(" + field + ",'%Y-%m-%d" + his + "')," + field + ")";
-		String fieldOpe = "FROM_UNIXTIME(" + field + ",'%Y-%m-%d" + his + "')";
-		this.where += (this.where.length() > 0 ? " AND " : "") + "TIMESTAMPDIFF(" + interval + "," + fieldOpe + "," + now + ")" + operatorAndValue;
 		return this;
 	}
 	//LIKE查询, 如: name LIKE 'G_ARTICLE/_%' ESCAPE '/'
@@ -774,6 +809,7 @@ public class Db {
 			else field = this.distinct;
 		}
 		StringBuilder sql = new StringBuilder("SELECT ").append(field).append(" FROM ").append(this.table);
+		if (this.alias.length() > 0) sql.append(" ").append(this.alias);
 		if (this.left != null) sql.append(StringUtils.join(this.left, ""));
 		if (this.right != null) sql.append(StringUtils.join(this.right, ""));
 		if (this.inner != null) sql.append(StringUtils.join(this.inner, ""));
@@ -1360,6 +1396,7 @@ public class Db {
 	//复原参数
 	public void restore() {
 		this.table = "";
+		this.alias = "";
 		this.left = null;
 		this.right = null;
 		this.inner = null;

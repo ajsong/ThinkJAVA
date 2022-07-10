@@ -57,7 +57,7 @@ public class Core extends Base {
 			this.token = member.getString("token");
 			this.memberId = member.getInt("id");
 			this.memberObj = member;
-			member = Db.name("member").where("id=?", this.memberId).field("status").find();
+			member = com.app.model.Member.where("id=?", this.memberId).field("status").find();
 			if (member == null) {
 				session("member", null);
 				this.token = "";
@@ -91,7 +91,7 @@ public class Core extends Base {
 	public DataMap get_member_from_token(String token, boolean is_session) {
 		if (token == null || token.length() == 0) return null;
 		if (this.memberObj == null || is_session) {
-			DataMap member = Db.name("member").where("token='" + token + "'").field("*, null as grade").find();
+			DataMap member = com.app.model.Member.where("token='" + token + "'").field("*, null as grade").find();
 			if (member == null) {
 				member = sessionDataMap("member");
 				if (member == null) {
@@ -101,23 +101,23 @@ public class Core extends Base {
 					return null;
 				}
 			}
-			/*DataMap shop = Db.name("shop s").leftJoin("member m", "s.memberId=m.id").where("m.id='" + member.get("id") + "'").field("s.*").find();
+			/*DataMap shop = com.app.model.Shop.alias("s").leftJoin("member m", "s.memberId=m.id").where("m.id='" + member.get("id") + "'").field("s.*").find();
 			if (shop != null) {
 				member.put("shop_id", shop.getInt("id"));
 				member.put("shop", shop);
 			}
-			DataMap grade = Db.name("grade").where(Integer.parseInt(String.valueOf(member.get("grade_id")))).find();
+			DataMap grade = com.app.model.MemberGrade.where(Integer.parseInt(String.valueOf(member.get("grade_id")))).find();
 			if (grade != null) {
 				member.put("grade", grade);
-			}*/
-			DataList thirdparty = Db.name("member_thirdparty").where(member.getInt("id")).select();
+			}
+			DataList thirdparty = com.app.model.MemberThirdparty.where(member.getInt("id")).select();
 			if (thirdparty != null) {
 				for (DataMap t : thirdparty) {
 					String type = t.getString("type") + "_openid";
 					member.put(type, t.getString("mark"));
 					if (t.getString("type").equals("wechat")) member.put("openid", t.getString("mark"));
 				}
-			}
+			}*/
 			this.memberId = member.getInt("id");
 			this.token = member.getString("token");
 			member.put("total_price", member.getDouble("money") + member.getDouble("commission")); //总财富

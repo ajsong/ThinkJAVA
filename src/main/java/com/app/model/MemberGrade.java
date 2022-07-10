@@ -5,119 +5,6 @@ import java.util.*;
 
 public class MemberGrade extends Core {
 
-	public Integer id;
-	public String name;
-	public String pic;
-	public String memo;
-	public Double single_total;
-	public Double team_total;
-	public Integer person;
-	public Integer score;
-	public Double price;
-	public Double level;
-	public Double line;
-	public Double recommend;
-	public Integer status;
-	public Integer sort;
-
-	public Integer getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getPic() {
-		return pic;
-	}
-	public void setPic(String pic) {
-		this.pic = pic;
-	}
-
-	public String getMemo() {
-		return memo;
-	}
-	public void setMemo(String memo) {
-		this.memo = memo;
-	}
-
-	public Double getSingle_total() {
-		return single_total;
-	}
-	public void setSingle_total(Double single_total) {
-		this.single_total = single_total;
-	}
-
-	public Double getTeam_total() {
-		return team_total;
-	}
-	public void setTeam_total(Double team_total) {
-		this.team_total = team_total;
-	}
-
-	public Integer getPerson() {
-		return person;
-	}
-	public void setPerson(Integer person) {
-		this.person = person;
-	}
-
-	public Integer getScore() {
-		return score;
-	}
-	public void setScore(Integer score) {
-		this.score = score;
-	}
-
-	public Double getPrice() {
-		return price;
-	}
-	public void setPrice(Double price) {
-		this.price = price;
-	}
-
-	public Double getLevel() {
-		return level;
-	}
-	public void setLevel(Double level) {
-		this.level = level;
-	}
-
-	public Double getLine() {
-		return line;
-	}
-	public void setLine(Double line) {
-		this.line = line;
-	}
-
-	public Double getRecommend() {
-		return recommend;
-	}
-	public void setRecommend(Double recommend) {
-		this.recommend = recommend;
-	}
-
-	public Integer getStatus() {
-		return status;
-	}
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
-
-	public Integer getSort() {
-		return sort;
-	}
-	public void setSort(Integer sort) {
-		this.sort = sort;
-	}
-
 	//数据库操作(自动设定表名)===================================================
 	public static String tablename() {
 		String clazz = new Object() {
@@ -127,6 +14,9 @@ public class MemberGrade extends Core {
 			}
 		}.get();
 		return Common.uncamelize(clazz.substring(clazz.lastIndexOf(".")+1));
+	}
+	public static Db alias(String alias) {
+		return Db.name(tablename()).alias(alias);
 	}
 	public static Db leftJoin(String table, String on) {
 		return Db.name(tablename()).leftJoin(table, on);
@@ -146,17 +36,23 @@ public class MemberGrade extends Core {
 	public static Db whereOr(Object where, Object...whereParams) {
 		return Db.name(tablename()).whereOr(where, whereParams);
 	}
+	public static Db whereDay(String field, String mark) {
+		return Db.name(tablename()).whereDay(field, mark);
+	}
+	public static Db whereTime(String field, String value) {
+		return Db.name(tablename()).whereTime(field, value);
+	}
+	public static Db whereTime(String field, String operator, String value) {
+		return Db.name(tablename()).whereTime(field, operator, value);
+	}
+	public static Db whereTime(String interval, String field, String operator, Object value) {
+		return Db.name(tablename()).whereTime(interval, field, operator, value);
+	}
 	public static Db field(Object field) {
 		return Db.name(tablename()).field(field);
 	}
 	public static Db distinct(String field) {
 		return Db.name(tablename()).distinct(field);
-	}
-	public static Db whereTime(String interval, String field, String operatorAndValue) {
-		return Db.name(tablename()).whereTime(interval, field, operatorAndValue);
-	}
-	public static Db whereTime(String interval, String field, String operatorAndValue, String now) {
-		return Db.name(tablename()).whereTime(interval, field, operatorAndValue, now);
 	}
 	public static Db like(String field, String str) {
 		return Db.name(tablename()).like(field, str);
@@ -199,6 +95,12 @@ public class MemberGrade extends Core {
 	}
 	public static Db fetchSql() {
 		return Db.name(tablename()).fetchSql();
+	}
+	public static boolean exist() {
+		return Db.name(tablename()).exist();
+	}
+	public static int count() {
+		return Db.name(tablename()).count();
 	}
 	public static DataList select(Object field) {
 		return Db.name(tablename()).select(field);

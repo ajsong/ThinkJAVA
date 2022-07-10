@@ -4,56 +4,7 @@ import com.framework.tool.*;
 import java.util.*;
 
 public class ManageGroup extends Core {
-
-	public Integer id;
-	public String name;
-	public String menu;
-	public String permission;
-	public Integer power;
-	public Integer add_time;
-
-	public Integer getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getMenu() {
-		return menu;
-	}
-	public void setMenu(String menu) {
-		this.menu = menu;
-	}
-
-	public String getPermission() {
-		return permission;
-	}
-	public void setPermission(String permission) {
-		this.permission = permission;
-	}
-
-	public Integer getPower() {
-		return power;
-	}
-	public void setPower(Integer power) {
-		this.power = power;
-	}
-
-	public Integer getAdd_time() {
-		return add_time;
-	}
-	public void setAdd_time(Integer add_time) {
-		this.add_time = add_time;
-	}
-
+	
 	//数据库操作(自动设定表名)===================================================
 	public static String tablename() {
 		String clazz = new Object() {
@@ -63,6 +14,9 @@ public class ManageGroup extends Core {
 			}
 		}.get();
 		return Common.uncamelize(clazz.substring(clazz.lastIndexOf(".")+1));
+	}
+	public static Db alias(String alias) {
+		return Db.name(tablename()).alias(alias);
 	}
 	public static Db leftJoin(String table, String on) {
 		return Db.name(tablename()).leftJoin(table, on);
@@ -82,17 +36,23 @@ public class ManageGroup extends Core {
 	public static Db whereOr(Object where, Object...whereParams) {
 		return Db.name(tablename()).whereOr(where, whereParams);
 	}
+	public static Db whereDay(String field, String mark) {
+		return Db.name(tablename()).whereDay(field, mark);
+	}
+	public static Db whereTime(String field, String value) {
+		return Db.name(tablename()).whereTime(field, value);
+	}
+	public static Db whereTime(String field, String operator, String value) {
+		return Db.name(tablename()).whereTime(field, operator, value);
+	}
+	public static Db whereTime(String interval, String field, String operator, Object value) {
+		return Db.name(tablename()).whereTime(interval, field, operator, value);
+	}
 	public static Db field(Object field) {
 		return Db.name(tablename()).field(field);
 	}
 	public static Db distinct(String field) {
 		return Db.name(tablename()).distinct(field);
-	}
-	public static Db whereTime(String interval, String field, String operatorAndValue) {
-		return Db.name(tablename()).whereTime(interval, field, operatorAndValue);
-	}
-	public static Db whereTime(String interval, String field, String operatorAndValue, String now) {
-		return Db.name(tablename()).whereTime(interval, field, operatorAndValue, now);
 	}
 	public static Db like(String field, String str) {
 		return Db.name(tablename()).like(field, str);
@@ -135,6 +95,12 @@ public class ManageGroup extends Core {
 	}
 	public static Db fetchSql() {
 		return Db.name(tablename()).fetchSql();
+	}
+	public static boolean exist() {
+		return Db.name(tablename()).exist();
+	}
+	public static int count() {
+		return Db.name(tablename()).count();
 	}
 	public static DataList select(Object field) {
 		return Db.name(tablename()).select(field);

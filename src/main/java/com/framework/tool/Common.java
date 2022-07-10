@@ -905,19 +905,61 @@ public class Common {
 		SimpleDateFormat dateformat = new SimpleDateFormat(format);
 		return dateformat.format(new Date(String.valueOf(timestamp).length()<13 ? Long.parseLong(timestamp+"000") : timestamp));
 	}
+	
+	//根据记号获取日期
+	public static String timetostr(String mark) {
+		return timetostr(mark, time());
+	}
+	public static String timetostr(String mark, String timestamp) {
+		return timetostr(mark, Long.parseLong(timestamp));
+	}
+	public static String timetostr(String mark, long timestamp) {
+		mark = mark.toUpperCase();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date(String.valueOf(timestamp).length()<13 ? Long.parseLong(timestamp+"000") : timestamp));
+		switch (mark) {
+			case "TODAY": return date("yyyy-MM-dd HH:mm:ss");
+			case "YESTERDAY": cal.add(Calendar.DATE, -1);break;
+			case "TOMORROW": cal.add(Calendar.DATE, 1);break;
+			default: {
+				if (!preg_match("^\\s*([+-]?\\d+)\\s*\\w+\\s*$", mark)) return date("yyyy-MM-dd HH:mm:ss");
+				Matcher matcher = Pattern.compile("^\\s*([+-]?\\d+)\\s*(\\w+)\\s*$").matcher(mark);
+				if (matcher.find()) {
+					int interval = Integer.parseInt(matcher.group(1).replace("+", ""));
+					switch (matcher.group(2).toUpperCase()) {
+						case "SECOND":case "SECONDS":cal.add(Calendar.SECOND, interval);break;
+						case "MINUTE":case "MINUTES":cal.add(Calendar.MINUTE, interval);break;
+						case "HOUR":case "HOURS":cal.add(Calendar.HOUR_OF_DAY, interval);break;
+						case "DAY":case "DAYS":cal.add(Calendar.DATE, interval);break;
+						case "WEEK":case "WEEKS":cal.add(Calendar.DAY_OF_WEEK, interval);break;
+						case "MONTH":case "MONTHS":cal.add(Calendar.MONTH, interval);break;
+						case "YEAR":case "YEARS":cal.add(Calendar.YEAR, interval);break;
+					}
+				}
+			}
+		}
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
+	}
 
-	//获取当前时间的指定部分
-	public static int getCalendar(String interval) {
-		interval = interval.toLowerCase();
-		Calendar c = Calendar.getInstance();
-		switch (interval) {
-			case "y":return c.get(Calendar.YEAR);
-			case "m":return c.get(Calendar.MONTH);
-			case "w":return c.get(Calendar.DAY_OF_WEEK);
-			case "d":return c.get(Calendar.DATE);
-			case "h":return c.get(Calendar.HOUR_OF_DAY);
-			case "n":return c.get(Calendar.MINUTE);
-			case "s":return c.get(Calendar.SECOND);
+	//获取时间的指定部分
+	public static int getCalendar(String mark) {
+		return getCalendar(mark, time());
+	}
+	public static int getCalendar(String mark, long timestamp) {
+		mark = mark.toLowerCase();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date(String.valueOf(timestamp).length()<13 ? Long.parseLong(timestamp+"000") : timestamp));
+		//cal.set(Calendar.HOUR_OF_DAY, 0); //去除时
+		//cal.set(Calendar.MINUTE, 0); //去除分
+		//cal.set(Calendar.SECOND, 0); //去除秒
+		switch (mark) {
+			case "y":return cal.get(Calendar.YEAR);
+			case "m":return cal.get(Calendar.MONTH);
+			case "w":return cal.get(Calendar.DAY_OF_WEEK);
+			case "d":return cal.get(Calendar.DATE);
+			case "h":return cal.get(Calendar.HOUR_OF_DAY);
+			case "n":return cal.get(Calendar.MINUTE);
+			case "s":return cal.get(Calendar.SECOND);
 		}
 		return 0;
 	}

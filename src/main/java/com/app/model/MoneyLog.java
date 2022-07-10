@@ -5,119 +5,6 @@ import java.util.*;
 
 public class MoneyLog extends Core {
 
-	public Integer id;
-	public Integer member_id;
-	public Double number;
-	public Double old;
-	public Double news;
-	public String remark;
-	public Integer type;
-	public Integer status;
-	public Integer money_type;
-	public Integer fromid;
-	public String fromtable;
-	public Double fee;
-	public Double percent;
-	public Integer add_time;
-
-	public Integer getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public Integer getMember_id() {
-		return member_id;
-	}
-	public void setMember_id(Integer member_id) {
-		this.member_id = member_id;
-	}
-
-	public Double getNumber() {
-		return number;
-	}
-	public void setNumber(Double number) {
-		this.number = number;
-	}
-
-	public Double getOld() {
-		return old;
-	}
-	public void setOld(Double old) {
-		this.old = old;
-	}
-
-	public Double getNew() {
-		return news;
-	}
-	public void setNew(Double news) {
-		this.news = news;
-	}
-
-	public String getRemark() {
-		return remark;
-	}
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
-
-	public Integer getType() {
-		return type;
-	}
-	public void setType(Integer type) {
-		this.type = type;
-	}
-
-	public Integer getStatus() {
-		return status;
-	}
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
-
-	public Integer getMoney_type() {
-		return money_type;
-	}
-	public void setMoney_type(Integer money_type) {
-		this.money_type = money_type;
-	}
-
-	public Integer getFromid() {
-		return fromid;
-	}
-	public void setFromid(Integer fromid) {
-		this.fromid = fromid;
-	}
-
-	public String getFromtable() {
-		return fromtable;
-	}
-	public void setFromtable(String fromtable) {
-		this.fromtable = fromtable;
-	}
-
-	public Double getFee() {
-		return fee;
-	}
-	public void setFee(Double fee) {
-		this.fee = fee;
-	}
-
-	public Double getPercent() {
-		return percent;
-	}
-	public void setPercent(Double percent) {
-		this.percent = percent;
-	}
-
-	public Integer getAdd_time() {
-		return add_time;
-	}
-	public void setAdd_time(Integer add_time) {
-		this.add_time = add_time;
-	}
-
 	//数据库操作(自动设定表名)===================================================
 	public static String tablename() {
 		String clazz = new Object() {
@@ -127,6 +14,9 @@ public class MoneyLog extends Core {
 			}
 		}.get();
 		return Common.uncamelize(clazz.substring(clazz.lastIndexOf(".")+1));
+	}
+	public static Db alias(String alias) {
+		return Db.name(tablename()).alias(alias);
 	}
 	public static Db leftJoin(String table, String on) {
 		return Db.name(tablename()).leftJoin(table, on);
@@ -146,17 +36,23 @@ public class MoneyLog extends Core {
 	public static Db whereOr(Object where, Object...whereParams) {
 		return Db.name(tablename()).whereOr(where, whereParams);
 	}
+	public static Db whereDay(String field, String mark) {
+		return Db.name(tablename()).whereDay(field, mark);
+	}
+	public static Db whereTime(String field, String value) {
+		return Db.name(tablename()).whereTime(field, value);
+	}
+	public static Db whereTime(String field, String operator, String value) {
+		return Db.name(tablename()).whereTime(field, operator, value);
+	}
+	public static Db whereTime(String interval, String field, String operator, Object value) {
+		return Db.name(tablename()).whereTime(interval, field, operator, value);
+	}
 	public static Db field(Object field) {
 		return Db.name(tablename()).field(field);
 	}
 	public static Db distinct(String field) {
 		return Db.name(tablename()).distinct(field);
-	}
-	public static Db whereTime(String interval, String field, String operatorAndValue) {
-		return Db.name(tablename()).whereTime(interval, field, operatorAndValue);
-	}
-	public static Db whereTime(String interval, String field, String operatorAndValue, String now) {
-		return Db.name(tablename()).whereTime(interval, field, operatorAndValue, now);
 	}
 	public static Db like(String field, String str) {
 		return Db.name(tablename()).like(field, str);
@@ -199,6 +95,12 @@ public class MoneyLog extends Core {
 	}
 	public static Db fetchSql() {
 		return Db.name(tablename()).fetchSql();
+	}
+	public static boolean exist() {
+		return Db.name(tablename()).exist();
+	}
+	public static int count() {
+		return Db.name(tablename()).count();
 	}
 	public static DataList select(Object field) {
 		return Db.name(tablename()).select(field);

@@ -41,7 +41,7 @@ public class Core extends Base {
 			this.manageObj = manage;
 			return true;
 		} else if ( cookie("manage_token") != null ) {
-			manage = Db.name("manage").where("token=?", cookie("manage_token")).find();
+			manage = com.app.model.Manage.where("token=?", cookie("manage_token")).find();
 			if (manage != null) {
 				manage.remove("password");
 				manage.remove("salt");
@@ -83,7 +83,7 @@ public class Core extends Base {
 	}
 	
 	public String[] getMenuIds() {
-		DataMap group = Db.name("manage_group").where(this.manageObj.getInt("group_id")).field("menu").find();
+		DataMap group = com.app.model.ManageGroup.where(this.manageObj.getInt("group_id")).field("menu").find();
 		if (group == null) return new String[]{"0"};
 		if (group.getString("menu").equals("all")) {
 			return new String[]{"all"};
@@ -96,10 +96,10 @@ public class Core extends Base {
 		return getAllMenus(0, null);
 	}
 	public DataList getAllMenus(int parentId, String[] menuIds) {
-		Db menu = Db.name("menu").where("parent_id=? and level>0", parentId);
+		Db menu = com.app.model.Menu.where("parent_id=? and level>0", parentId);
 		if (menuIds != null) menu.where("id in ("+ StringUtils.join(menuIds, ",") +")");
 		return menu.order("sort, id").field("*, null as children").select().each((CallbackDataMap)(DataMap item)->{
-			Db children = Db.name("menu").where("parent_id=? and level>0", item.getInt("id"));
+			Db children = com.app.model.Menu.where("parent_id=? and level>0", item.getInt("id"));
 			if (menuIds != null) children.where("id in ("+ StringUtils.join(menuIds, ",") +")");
 			int count = children.count();
 			if (count > 0) {
@@ -117,9 +117,9 @@ public class Core extends Base {
 		String[] menuIds = this.getMenuIds();
 		if (Arrays.asList(menuIds).contains("all")) return true;
 		String path = com.app.model.Menu.getRoutePath();
-		DataMap power = Db.name("menu").where("path=?", "/"+path).field("id").find();
+		DataMap power = com.app.model.Menu.where("path=?", "/"+path).field("id").find();
 		if (power != null && Arrays.asList(menuIds).contains(power.getString("id"))) return true;
-		power = Db.name("manage_group").where("id="+this.manageObj.getInt("group_id")+" and CONCAT('|',permission,'|') LIKE '%|"+app+":"+act+"|%'").find();
+		power = com.app.model.ManageGroup.where("id="+this.manageObj.getInt("group_id")+" and CONCAT('|',permission,'|') LIKE '%|"+app+":"+act+"|%'").find();
 		return power != null;
 	}
 	
@@ -164,11 +164,11 @@ public class Core extends Base {
 		DataMap manage = Common.sessionDataMap("manage");
 		if (manage == null) return false;
 		if (manage.getInt("super") == 1) return true;
-		DataMap group = Db.name("manage_group").where("id", manage.getInt("group_id")).field("menu").find();
+		DataMap group = com.app.model.ManageGroup.where("id", manage.getInt("group_id")).field("menu").find();
 		if (group == null) return false;
 		String[] menuIds = group.getString("menu").equals("all") ? new String[]{"all"} : group.getString("menu").split(",");
 		if (Arrays.asList(menuIds).contains("all")) return true;
-		DataMap power = Db.name("manage_group").where("id", manage.getInt("group_id")).where("CONCAT('|',permission,'|') LIKE '%|"+app+":"+act+"|%'").find();
+		DataMap power = com.app.model.ManageGroup.where("id", manage.getInt("group_id")).where("CONCAT('|',permission,'|') LIKE '%|"+app+":"+act+"|%'").find();
 		return power != null;
 	}
 	

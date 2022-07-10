@@ -10,14 +10,14 @@ public class Login extends Base {
 			String password = this.request.post("password");
 			int remember = this.request.post("remember", 0);
 			if (username.length()==0 || password.length()==0) return error("请输入账号与密码");
-			DataMap manage = Db.name("manage").where("name=?", username).find();
+			DataMap manage = com.app.model.Manage.where("name=?", username).find();
 			if (manage == null) return error("用户不存在");
 			if (!Common.crypt_password(password, manage.getString("salt")).equals(manage.getString("password"))) return error("账号或密码错误");
 			if (manage.getInt("status") == 0) return error("当前账号已被冻结");
 			manage.remove("password");
 			manage.remove("salt");
 			String token = Common.generate_token();
-			Db.name("manage").where(manage.getInt("id")).update("token", token);
+			com.app.model.Manage.where(manage.getInt("id")).update("token", token);
 			session("manage", manage);
 			if (remember == 1) {
 				cookie("manage_token", token, 60*60*24*365);

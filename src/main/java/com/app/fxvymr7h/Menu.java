@@ -6,8 +6,8 @@ import java.util.*;
 
 public class Menu extends Core {
 	public Object index() {
-		DataList list = Db.name("menu").where("parent_id", 0).field("*, null as children").order("sort, id").select().each((CallbackDataMap)(DataMap item)->{
-			item.put("children", Db.name("menu").where("parent_id", item.getInt("id")).select());
+		DataList list = com.app.model.Menu.where("parent_id", 0).field("*, null as children").order("sort, id").select().each((CallbackDataMap)(DataMap item)->{
+			item.put("children", com.app.model.Menu.where("parent_id", item.getInt("id")).select());
 		});
 		return this.render(new HashMap<String, Object>(){
 			{
@@ -43,22 +43,22 @@ public class Menu extends Core {
 			}
 			data.put("level", level);
 			if (id > 0) {
-				Db.name("menu").where("id", id).update(data);
+				com.app.model.Menu.where("id", id).update(data);
 			} else {
-				Db.name("menu").insert(data);
+				com.app.model.Menu.insert(data);
 			}
-			Db.name("manage").where("status", 1).field("id").select().each((CallbackDataMap)(DataMap item)->{
+			com.app.model.Manage.where("status", 1).field("id").select().each((CallbackDataMap)(DataMap item)->{
 				Cache.delete("manage:menu:" + item.getString("id"));
 			});
 			return success("tourl:menu/index", "提交成功");
 		}
 		DataMap row;
 		if (id > 0) {
-			row = Db.name("menu").where("id", id).find();
+			row = com.app.model.Menu.where("id", id).find();
 		} else {
 			row = Db.createInstanceDataMap("menu");
 		}
-		DataList parent = Db.name("menu").where("parent_id", 0).order("sort, id").select();
+		DataList parent = com.app.model.Menu.where("parent_id", 0).order("sort, id").select();
 		return this.render(new HashMap<String, Object>() {
 			{
 				put("row", row);
@@ -86,12 +86,12 @@ public class Menu extends Core {
 			}
 			data.put("level", level);
 			if (g.getInt("id", 0) > 0) {
-				Db.name("menu").where("id", g.getInt("id")).update(data);
+				com.app.model.Menu.where("id", g.getInt("id")).update(data);
 			//} else {
-				//Db.name("menu").insert(data);
+				//com.app.model.Menu.insert(data);
 			}
 		}
-		Db.name("manage").where("status", 1).field("id").select().each((CallbackDataMap)(DataMap item)->{
+		com.app.model.Manage.where("status", 1).field("id").select().each((CallbackDataMap)(DataMap item)->{
 			Cache.delete("manage:menu:" + item.getString("id"));
 		});
 		return success(null, "提交成功");
@@ -100,9 +100,9 @@ public class Menu extends Core {
 	public Object delete() {
 		int id = this.request.get("id", 0);
 		if (id <= 0) return error("数据错误");
-		Db.name("menu").where("id", id).delete();
-		Db.name("menu").where("parent_id", id).delete();
-		Db.name("manage").where("status", 1).field("id").select().each((CallbackDataMap)(DataMap item)->{
+		com.app.model.Menu.where("id", id).delete();
+		com.app.model.Menu.where("parent_id", id).delete();
+		com.app.model.Manage.where("status", 1).field("id").select().each((CallbackDataMap)(DataMap item)->{
 			Cache.delete("manage:menu:" + item.getString("id"));
 		});
 		return success(null, "操作成功");
