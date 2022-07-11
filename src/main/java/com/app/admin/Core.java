@@ -62,7 +62,7 @@ public class Core extends Base {
 		if (!this._check_login()) {
 			this.appKeepRunning = false;
 			session("manage_gourl", Common.url());
-			if (Common.isAjax()) {
+			if (isAjax()) {
 				error("登录失效", -2);
 			} else {
 				this.redirect("/" + this.module + "/login");

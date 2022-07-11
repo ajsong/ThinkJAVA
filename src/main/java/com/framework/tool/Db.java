@@ -251,11 +251,11 @@ public class Db {
 	//时间对比查询
 	//whereDay("add_time", "today") //查询add_time今天的记录
 	public Db whereDay(String field, String mark) {
-		return whereTime(field, "=", Common.timetostr(mark));
+		return whereTime(field, "=", Common.date("Y-m-d HH:ii:ss", Common.strtotime(mark)));
 	}
 	//whereTime("add_time", "2022-7-10") //查询add_time等于指定日期的记录
 	public Db whereTime(String field, String value) {
-		return whereTime(field, "=", Common.timetostr(value));
+		return whereTime(field, "=", Common.date("Y-m-d HH:ii:ss", Common.strtotime(value)));
 	}
 	//whereTime("add_time", "<", "2022-7-10") //查询add_time小于指定日期的记录
 	public Db whereTime(String field, String operator, String value) {

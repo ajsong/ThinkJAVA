@@ -21,8 +21,7 @@ import java.lang.reflect.*;
 import java.math.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.text.*;
@@ -580,6 +579,22 @@ public class Common {
 		HttpServletRequest req = (HttpServletRequest) requests.get(request.getRequestURI());
 		return (req.getHeader("x-requested-with") != null && req.getHeader("x-requested-with").equalsIgnoreCase("XMLHttpRequest")) || request().get("output").equals("json");
 	}
+	
+	//是否NULL
+	@SuppressWarnings("unchecked")
+	public static boolean isNullOrEmpty(Object value) {
+		if (value == null) return true;
+		if ((value instanceof String) && ((String) value).length() > 0) return false;
+		if ((value instanceof Map) && ((Map<Object, Object>) value).keySet().size() > 0) return false;
+		if ((value instanceof List) && ((List<Object>) value).size() > 0) return false;
+		if ((value instanceof String[]) && ((String[]) value).length > 0) return false;
+		if ((value instanceof Integer[]) && ((Integer[]) value).length > 0) return false;
+		if ((value instanceof Long[]) && ((Long[]) value).length > 0) return false;
+		if ((value instanceof Float[]) && ((Float[]) value).length > 0) return false;
+		if ((value instanceof Double[]) && ((Double[]) value).length > 0) return false;
+		if ((value instanceof BigDecimal[]) && ((BigDecimal[]) value).length > 0) return false;
+		return !isNumeric(value);
+	}
 
 	//判断移动端浏览器打开
 	public static boolean isMobileWeb() {
@@ -646,7 +661,7 @@ public class Common {
 	}
 	
 	//整数/浮点类型字符串转数值
-	public static Object toNumber(String str) {
+	public static Object Number(String str) {
 		if (!isNumeric(str)) return str;
 		if (str.contains(".")) return Float.valueOf(str);
 		return Integer.valueOf(str);
@@ -916,22 +931,22 @@ public class Common {
 	}
 	
 	//根据记号获取日期
-	public static String timetostr(String mark) {
-		return timetostr(mark, time());
+	public static long strtotime(String mark) {
+		return strtotime(mark, time());
 	}
-	public static String timetostr(String mark, String timestamp) {
-		return timetostr(mark, Long.parseLong(timestamp));
+	public static long strtotime(String mark, String timestamp) {
+		return strtotime(mark, Long.parseLong(timestamp));
 	}
-	public static String timetostr(String mark, long timestamp) {
+	public static long strtotime(String mark, long timestamp) {
 		mark = mark.toUpperCase();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date(String.valueOf(timestamp).length()<13 ? Long.parseLong(timestamp+"000") : timestamp));
 		switch (mark) {
-			case "TODAY": return date("yyyy-MM-dd HH:mm:ss");
+			case "TODAY": return time();
 			case "YESTERDAY": cal.add(Calendar.DATE, -1);break;
 			case "TOMORROW": cal.add(Calendar.DATE, 1);break;
 			default: {
-				if (!preg_match("^\\s*([+-]?\\d+)\\s*\\w+\\s*$", mark)) return date("yyyy-MM-dd HH:mm:ss");
+				if (!preg_match("^\\s*([+-]?\\d+)\\s*\\w+\\s*$", mark)) return time();
 				Matcher matcher = Pattern.compile("^\\s*([+-]?\\d+)\\s*(\\w+)\\s*$").matcher(mark);
 				if (matcher.find()) {
 					int interval = Integer.parseInt(matcher.group(1).replace("+", ""));
@@ -947,7 +962,8 @@ public class Common {
 				}
 			}
 		}
-		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
+		//return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
+		return Long.parseLong(String.valueOf(Integer.parseInt(String.valueOf(cal.getTimeInMillis()/1000))));
 	}
 
 	//获取时间的指定部分

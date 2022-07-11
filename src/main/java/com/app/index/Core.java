@@ -187,7 +187,7 @@ public class Core extends Base {
 		this.not_login("请登录", -2);
 	}
 	public void not_login(String msg, int code) {
-		if (Common.isAjax()) {
+		if (isAjax()) {
 			error(msg, code);
 		} else {
 			this.redirect("/" + this.module + "/passport/login");
@@ -199,7 +199,7 @@ public class Core extends Base {
 		return this.render(data, "");
 	}
 	public Object render(Object data, String template_file) {
-		if (Common.isAjax()) {
+		if (isAjax()) {
 			return success(data);
 		}
 		JSONObject dataObj = null;

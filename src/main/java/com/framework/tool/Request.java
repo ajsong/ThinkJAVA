@@ -1,8 +1,6 @@
-//Developed by @mario 2.5.20220709
+//Developed by @mario 2.6.20220711
 package com.framework.tool;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.fileupload.*;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -17,6 +15,7 @@ import java.util.regex.*;
 
 public class Request {
 	private RequestWrapper request;
+	private HttpServletRequest originRequest;
 	private Map<String, String[]> params;
 
 	public Request() {
@@ -30,11 +29,16 @@ public class Request {
 
 	public void init(HttpServletRequest request) {
 		try {
+			this.originRequest = request;
 			this.request = new RequestWrapper(request);
 			this.request.setCharacterEncoding("utf-8");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public HttpServletRequest getRequest() {
+		return this.originRequest;
 	}
 
 	public Object getAttribute(String key) {

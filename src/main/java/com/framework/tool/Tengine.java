@@ -3,9 +3,7 @@ package com.framework.tool;
 
 import com.alibaba.fastjson.*;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
+import org.springframework.web.context.request.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.math.*;
@@ -71,13 +69,15 @@ public class Tengine {
 		if (templateRoot == null) {
 			return displayExtend(null, templatePath);
 		}
+		Map<String, String> moduleMap = Common.getModule(this.request.getRequest());
+		String module = moduleMap.get("module");
 		templateRoot = Common.rtrim(templateRoot, "/");
 		String path = templateRoot + "/" + templatePath;
 		File template = new File(this.setSuffix(path));
 		if (!template.exists()) throw new IllegalArgumentException("TEMPLATE FILE IS NOT EXIST:\n" + path);
 		String dataMd5 = Common.md5(JSON.toJSONString(this.data, SerializerFeature.WriteMapNullValue));
-		String cachePath = rootPath + "/" + runtimeDir + "/" + cacheDir;
-		String cacheFile = template.getName() + "." + dataMd5;
+		String cachePath = rootPath + "/" + runtimeDir + "/" + module + "/" + cacheDir;
+		String cacheFile = templatePath.replace(suffix, "").replace("/", ".") + "." + dataMd5;
 		String cacheFilePath = cachePath + "/" + cacheFile;
 		if (cacheEnabled && !isExcludeCache) {
 			File file = new File(cacheFilePath);

@@ -1,13 +1,10 @@
 package com.framework;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.framework.closure.Callback;
 import com.framework.tool.*;
 import com.framework.plugins.upload.Qiniu;
 import javax.servlet.http.*;
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 public class Base {
@@ -89,27 +86,6 @@ public class Base {
 		return this.appKeepRunning;
 	}
 	
-	public long time() {
-		return Common.time();
-	}
-	public String date(String format) {
-		return Common.date(format);
-	}
-	public String date(String format, String timestamp) {
-		return Common.date(format, timestamp);
-	}
-	public String date(String format, long timestamp) {
-		return Common.date(format, timestamp);
-	}
-	public String timetostr(String mark) {
-		return Common.timetostr(mark);
-	}
-	public String timetostr(String mark, String timestamp) {
-		return Common.timetostr(mark, timestamp);
-	}
-	public String timetostr(String mark, long timestamp) {
-		return Common.timetostr(mark, timestamp);
-	}
 	public Object session(String key) {
 		return Common.session(key);
 	}
@@ -149,17 +125,53 @@ public class Base {
 	public String rtrim(String str, String symbol) {
 		return Common.rtrim(str, symbol);
 	}
+	public boolean isAjax() {
+		return Common.isAjax();
+	}
+	public boolean isNullOrEmpty(Object value) {
+		return Common.isNullOrEmpty(value);
+	}
+	public Object Number(String str) {
+		return Common.Number(str);
+	}
 	public String json_encode(Object obj) {
 		return Common.json_encode(obj);
 	}
 	public <T> T json_decode(String value) {
 		return Common.json_decode(value);
 	}
+	public long time() {
+		return Common.time();
+	}
+	public String date(String format) {
+		return Common.date(format);
+	}
+	public String date(String format, String timestamp) {
+		return Common.date(format, timestamp);
+	}
+	public String date(String format, long timestamp) {
+		return Common.date(format, timestamp);
+	}
+	public long strtotime(String mark) {
+		return Common.strtotime(mark);
+	}
+	public long strtotime(String mark, String timestamp) {
+		return Common.strtotime(mark, timestamp);
+	}
+	public long strtotime(String mark, long timestamp) {
+		return Common.strtotime(mark, timestamp);
+	}
 	public String preg_replace(String pattern, Callback callback, String str) {
 		return Common.preg_replace(pattern, callback, str);
 	}
 	public boolean preg_match(String pattern, String str) {
 		return Common.preg_match(pattern, str);
+	}
+	public String add_domain(String url) {
+		return Common.add_domain(url);
+	}
+	public <T> T add_domain_deep(T obj, String field) {
+		return Common.add_domain_deep(obj, field);
 	}
 	public Object success() {
 		return Common.success();
