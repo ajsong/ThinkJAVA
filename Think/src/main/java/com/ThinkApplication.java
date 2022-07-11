@@ -22,14 +22,17 @@ public class ThinkApplication {
 			if (commands[0].equals("make")) {
 				if (commands.length > 1 && args.length > 1) {
 					String argument = args[1];
+					boolean detail = (args.length > 2 && args[2].equals("--detail"));
+					if (argument.contains("--") && args.length > 2) {
+						detail = argument.equals("--detail");
+						argument = args[2];
+					}
 					if (commands[1].equals("controller")) {
-						boolean detail = (args.length > 2 && args[2].equals("--detail"));
 						String filepath = createControllerFile(argument, detail);
 						if (filepath == null) System.exit(0);
 						System.out.println("controller:\033[32m" + filepath + "\033[m created successfully.\n");
 						System.exit(0);
 					} else if (commands[1].equals("model")) {
-						boolean detail = (args.length > 2 && args[2].equals("--detail"));
 						String filepath = createModelFile(uncamelize(argument), detail);
 						if (filepath == null) System.exit(0);
 						System.out.println("model:\033[32m" + filepath + "\033[m created successfully.\n");
@@ -218,8 +221,16 @@ public class ThinkApplication {
 				clazz = marks[1];
 			}
 			clazz = camelize(clazz);
+			String path = root_path() + "/src/main/java/com/app/" + packagePath;
+			if (!makedir(path)) return null;
+			String filepath = path + "/" + clazz + ".java";
+			if (new File(filepath).exists()) {
+				System.out.println("controller:\033[31m" + filepath + "\033[m already exist.\n");
+				return null;
+			}
 			StringBuilder sb = new StringBuilder("package com.app."+packagePath+";\n\n").append("public class ").append(clazz).append(" extends Core {\n\n");
 			if (detail) {
+				sb.append("\t");
 				sb.append("//显示资源列表\n" +
 						"\tpublic Object index() {\n" +
 						"\t\treturn this.render(null);\n" +
@@ -228,37 +239,40 @@ public class ThinkApplication {
 						"\t//显示创建资源表单页\n" +
 						"\tpublic Object create() {\n" +
 						"\t\tint id = this.request.get(\"id\", 0);\n" +
+						"\t\treturn this.render(null);\n" +
 						"\t}\n" +
 						"\t\n" +
 						"\t//保存新建的资源\n" +
 						"\tpublic Object save() {\n" +
 						"\t\tint id = this.request.post(\"id\", 0);\n" +
+						"\t\treturn this.render(null);\n" +
 						"\t}\n" +
 						"\t\n" +
 						"\t//显示指定的资源\n" +
 						"\tpublic Object read() {\n" +
 						"\t\tint id = this.request.get(\"id\", 0);\n" +
+						"\t\treturn this.render(null);\n" +
 						"\t}\n" +
 						"\n" +
 						"\t//显示编辑资源表单页\n" +
 						"\tpublic Object edit() {\n" +
 						"\t\tint id = this.request.get(\"id\", 0);\n" +
+						"\t\treturn this.render(null);\n" +
 						"\t}\n" +
 						"\t\n" +
 						"\t//保存更新的资源\n" +
 						"\tpublic Object update() {\n" +
 						"\t\tint id = this.request.post(\"id\", 0);\n" +
+						"\t\treturn this.render(null);\n" +
 						"\t}\n" +
 						"\t\n" +
 						"\t//删除指定资源\n" +
 						"\tpublic Object delete() {\n" +
 						"\t\tint id = this.request.post(\"id\", 0);\n" +
-						"\t}\n");
+						"\t\treturn this.render(null);\n" +
+						"\t}");
 			}
-			sb.append("\n}");
-			String path = root_path() + "/src/main/java/com/app/" + packagePath;
-			if (!makedir(path)) return null;
-			String filepath = path + "/" + clazz + ".java";
+			sb.append("\n\n}");
 			FileWriter writer = new FileWriter(filepath);
 			writer.write(sb.toString());
 			writer.close();
@@ -286,6 +300,13 @@ public class ThinkApplication {
 		PreparedStatement ps = null;
 		try {
 			String clazz = camelize(table);
+			String path = root_path() + "/src/main/java/com/app/model";
+			if (!makedir(path)) return null;
+			String filepath = path + "/" + clazz + ".java";
+			if (new File(filepath).exists()) {
+				System.out.println("model:\033[31m" + filepath + "\033[m already exist.\n");
+				return null;
+			}
 			StringBuilder sb = new StringBuilder("package com.app.model;\n\nimport com.framework.tool.*;\nimport java.util.*;\n\n")
 					.append("public class ").append(clazz).append(" extends Core {\n");
 			if (detail) {
@@ -445,9 +466,6 @@ public class ThinkApplication {
 					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
 					"\t}\n");
 			sb.append("\n}");
-			String path = root_path() + "/src/main/java/com/app/model";
-			if (!makedir(path)) return null;
-			String filepath = path + "/" + clazz + ".java";
 			FileWriter writer = new FileWriter(filepath);
 			writer.write(sb.toString());
 			writer.close();
