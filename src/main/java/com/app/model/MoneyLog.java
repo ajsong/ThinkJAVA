@@ -87,11 +87,11 @@ public class MoneyLog extends Core {
 	public static Db cached(int cached) {
 		return Db.name(tablename()).cached(cached);
 	}
-	public static Db pagination(boolean pagination) {
-		return Db.name(tablename()).pagination(pagination);
+	public static Db pagination() {
+		return Db.name(tablename()).pagination();
 	}
-	public static Db pagination(boolean pagination, String paginationMark) {
-		return Db.name(tablename()).pagination(pagination, paginationMark);
+	public static Db pagination(String paginationMark) {
+		return Db.name(tablename()).pagination(paginationMark);
 	}
 	public static Db fetchSql() {
 		return Db.name(tablename()).fetchSql();

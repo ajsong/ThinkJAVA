@@ -1,4 +1,4 @@
-//Developed by @mario 3.1.20220710
+//Developed by @mario 3.2.20220711
 package com.framework.tool;
 
 import com.alibaba.fastjson.*;
@@ -99,7 +99,7 @@ public class Tengine {
 		}
 		String html = displayExtend(templateRoot, templatePath);
 		if (cacheEnabled && !isExcludeCache) {
-			Common.makedir(cachePath);
+			if (!Common.makedir(cachePath)) return null;
 			File file = new File(cacheFilePath);
 			try {
 				FileWriter fileWritter = new FileWriter(file);

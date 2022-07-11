@@ -32,7 +32,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 public class Common {
-	static String sdkVersion = "3.6.20220710";
+	static String sdkVersion = "3.7.20220711";
 	static String rootPath;
 	static String runtimeDir;
 	static Map<String, Object> requests;
@@ -120,27 +120,36 @@ public class Common {
 		getServlet();
 		HttpServletRequest req = (HttpServletRequest) requests.get(request.getRequestURI());
 		//System.out.println(req.getSession().getMaxInactiveInterval());
-		try {
-			return req.getSession().getAttribute(key);
-		} catch (NullPointerException e) {
-			return null;
+		//req.getSession().setMaxInactiveInterval(-1); //永不过期
+		HttpSession session = req.getSession(false);
+		if (session != null) {
+			try {
+				return session.getAttribute(key);
+			} catch (NullPointerException e) {
+				return null;
+			}
 		}
+		return null;
 	}
 	public static void session(String key, Object value) {
 		getServlet();
 		HttpServletRequest req = (HttpServletRequest) requests.get(request.getRequestURI());
-		if (value == null) {
+		HttpSession session = req.getSession(false);
+		if (session != null) {
+			if (value == null) {
+				try {
+					req.getSession().removeAttribute(key);
+					//req.getSession().invalidate(); //全部清空
+				} catch (Exception e) {
+					//e.printStackTrace();
+				}
+				return;
+			}
 			try {
-				req.getSession().removeAttribute(key);
+				req.getSession().setAttribute(key, value);
 			} catch (Exception e) {
 				//e.printStackTrace();
 			}
-			return;
-		}
-		try {
-			req.getSession().setAttribute(key, value);
-		} catch (Exception e) {
-			//e.printStackTrace();
 		}
 	}
 	@SuppressWarnings("unchecked")
@@ -1047,10 +1056,10 @@ public class Common {
 	}
 
 	//创建文件夹
-	public static void makedir(String dir) {
+	public static boolean makedir(String dir) {
 		dir = trim(dir.replace(root_path(), "").replace("\\", "/"), "/");
 		File path = new File(root_path(), dir);
-		if (path.exists() && path.isDirectory()) return;
+		if (path.exists() && path.isDirectory()) return true;
 		String[] dirs = dir.split("/");
 		String filePath = root_path();
 		for (String d : dirs) {
@@ -1060,8 +1069,10 @@ public class Common {
 				filePath += "/" + d;
 			} catch (Exception e) {
 				error("#error?tips=FILE PATH CREATE FAIL:\n" + filePath + "/" + d);
+				return false;
 			}
 		}
+		return true;
 	}
 	public static boolean makedirs(String dir) {
 		String filePath = root_path() + dir.replace(root_path(), "");
@@ -2023,7 +2034,8 @@ public class Common {
 		String app = moduleMap.get("app");
 		String act = moduleMap.get("act");
 		boolean isError = webPath.equals("error"); //错误页面
-		if (getYml("spring.mvc.view.type", "").equalsIgnoreCase("Tengine")) {
+		String templateType = getYml("spring.mvc.view.type", "");
+		if (templateType.equalsIgnoreCase("Tengine")) {
 			Tengine engine = new Tengine();
 			JSONObject view_replace_str = getYml("spring.mvc.view.replace-str", new JSONObject());
 			if (!view_replace_str.isEmpty()) {
@@ -2033,15 +2045,16 @@ public class Common {
 					engine.setReplace("{"+key+"}", value);
 				}
 			}
-			boolean isExcludeCache = req.getServerName().equals("localhost");
+			//boolean isExcludeCache = req.getServerName().equals("localhost");
+			boolean isExcludeCache = false;
 			if (!isError) {
-				String className = "com.app."+module+"."+Character.toUpperCase(app.charAt(0)) + app.substring(1);
+				String className = "com.app." + module + "." + Character.toUpperCase(app.charAt(0)) + app.substring(1);
 				try {
 					engine.classForCustomFunction(Class.forName(className));
 				} catch (ClassNotFoundException e) {
 					writeError("Tengine: " + className + " IS NOT FOUND");
 				}
-				JSONObject not_check_login = getYml("sdk.not.check.login", new JSONObject());
+				/*JSONObject not_check_login = getYml("sdk.not.check.login", new JSONObject());
 				if ( !not_check_login.isEmpty() ) {
 					JSONArray param = not_check_login.getJSONArray(app);
 					if ( param == null || param.isEmpty() ) {
@@ -2053,11 +2066,11 @@ public class Common {
 							isExcludeCache = true;
 						}
 					}
-				}
+				}*/
 			}
 			String prefix = getYml("spring.mvc.view.prefix", "");
 			String suffix = getYml("spring.mvc.view.suffix", "");
-			String path = getYml("spring.mvc.view.path", "");
+			String path = getYml("spring.mvc.view.outside-path", "");
 			String templateRoot = null;
 			if (path.length() > 0) {
 				templateRoot = root_path() + "/" + trim(path, "/");

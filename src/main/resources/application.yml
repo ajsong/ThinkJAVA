@@ -15,10 +15,10 @@ spring:
     banner-mode: off
   #数据库(主)
   datasource:
-    url: jdbc:mysql://localhost:3306/lhtl?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://localhost:3306/hifun?useUnicode=true&characterEncoding=utf8
     username: root
     password: 1e4a3e55d8922cea
-    prefix: lh_
+    prefix: hi_
     cache-dir: sql
     #数据库(从)
     slaver:
@@ -49,7 +49,7 @@ spring:
       prefix: /META-INF/resources/
       suffix: .html
       #指定资源的jar包外相对路径
-      path: /templates
+      outside-path: /templates
       #模板引擎类型, Tengine|jsp
       type: Tengine
       cache:
@@ -83,11 +83,11 @@ spring:
         # 连接池中的最小空闲连接
         min-idle: 0
 
-#域名绑定模块入口, 逗号隔开, 格式: host1=module1,host2=module2, host为*时默认代表前台
 sdk:
   host:
     module:
-      route: '*=index,spring.website.cn=fxvymr7h'
+      #域名绑定模块入口, 逗号隔开, 格式: host1=module1,host2=module2, host为*时默认代表前台
+      route: '*=index,spring.website.cn=admin'
   #默认模块、方法
   app:
     default:

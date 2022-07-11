@@ -7,7 +7,7 @@ import java.util.*;
 
 @RestController
 public class Start {
-	@RequestMapping(value = {"/index/**", "/fxvymr7h/**", "/error"})
+	@RequestMapping(value = {"/index/**", "/admin/**", "/error"})
 	Object index(HttpServletRequest request, HttpServletResponse response) {
 		String ban = (String) request.getSession().getAttribute("appActMissing");
 		int count = (ban == null || ban.length() == 0) ? 0 : Integer.parseInt(ban);

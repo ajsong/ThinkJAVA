@@ -1,6 +1,5 @@
-package com.app.fxvymr7h;
+package com.app.admin;
 
-import com.framework.tool.*;
 import java.util.*;
 
 public class Index extends Core {

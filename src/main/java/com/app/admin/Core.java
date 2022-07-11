@@ -1,4 +1,4 @@
-package com.app.fxvymr7h;
+package com.app.admin;
 
 import com.alibaba.fastjson.*;
 import com.framework.Base;
@@ -18,7 +18,9 @@ public class Core extends Base {
 		this.manageId = 0;
 		
 		//判断登录
-		this.check_login();
+		if (!this.check_login()) {
+			return;
+		}
 		
 		//判断冻结
 		if (this.manageObj.getInt("status") != 1) {

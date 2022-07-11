@@ -1,4 +1,4 @@
-//Developed by @mario 2.7.20220710
+//Developed by @mario 2.8.20220711
 package com.framework.tool;
 
 import com.alibaba.fastjson.*;
@@ -414,11 +414,11 @@ public class Db {
 		return this;
 	}
 	//设置分页
-	public Db pagination(boolean pagination) {
-		return pagination(pagination, "page");
+	public Db pagination() {
+		return pagination("page");
 	}
-	public Db pagination(boolean pagination, String paginationMark) {
-		this.pagination = pagination;
+	public Db pagination(String paginationMark) {
+		this.pagination = true;
 		this.paginationMark = paginationMark;
 		return this;
 	}
@@ -888,7 +888,7 @@ public class Db {
 		Map<String, String> moduleMap = Common.getModule(request);
 		String module = moduleMap.get("module");
 		String cachePath = rootPath + "/" + runtimeDir + "/" + module + "/" + cacheDir;
-		Common.makedir(cachePath);
+		if (!Common.makedir(cachePath)) return;
 		File file = new File(cachePath + "/" + _md5(sql));
 		try {
 			FileWriter fileWritter = new FileWriter(file);
@@ -922,7 +922,7 @@ public class Db {
 		Map<String, String> moduleMap = Common.getModule(request);
 		String module = moduleMap.get("module");
 		String cachePath = rootPath + "/" + runtimeDir + "/" + module + "/" + cacheDir;
-		Common.makedir(cachePath);
+		if (!Common.makedir(cachePath)) return null;
 		File file = new File(cachePath + "/" + _md5(sql));
 		if (file.exists()) {
 			if (this.cached == -1 || (new Date().getTime()/1000 - file.lastModified()/1000) <= this.cached) {

@@ -1,4 +1,4 @@
-package com.app.fxvymr7h;
+package com.app.admin;
 
 import com.app.model.ManageGroup;
 import com.framework.closure.*;
@@ -8,7 +8,7 @@ import java.util.*;
 public class Manage extends Core {
 	
 	public Object group() {
-		DataList list = ManageGroup.order("id").select().each((CallbackDataMap)(DataMap item) -> {
+		DataList list = ManageGroup.order("id").pagination().select().each((CallbackDataMap)(DataMap item) -> {
 			item.put("add_time", Common.date("Y-m-d H:i", item.getInt("add_time")));
 		});
 		return this.render(new HashMap<String, Object>(){

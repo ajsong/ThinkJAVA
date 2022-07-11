@@ -1,4 +1,4 @@
-package com.app.fxvymr7h;
+package com.app.admin;
 
 import com.framework.Base;
 import com.framework.tool.*;

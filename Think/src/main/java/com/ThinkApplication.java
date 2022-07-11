@@ -23,11 +23,15 @@ public class ThinkApplication {
 				if (commands.length > 1 && args.length > 1) {
 					String argument = args[1];
 					if (commands[1].equals("controller")) {
-						System.out.println("\033[32mmake:controller\033[m");
+						boolean detail = (args.length > 2 && args[2].equals("--detail"));
+						String filepath = createControllerFile(argument, detail);
+						if (filepath == null) System.exit(0);
+						System.out.println("controller:\033[32m" + filepath + "\033[m created successfully.\n");
 						System.exit(0);
 					} else if (commands[1].equals("model")) {
 						boolean detail = (args.length > 2 && args[2].equals("--detail"));
-						String filepath = createInstanceFile(uncamelize(argument), detail);
+						String filepath = createModelFile(uncamelize(argument), detail);
+						if (filepath == null) System.exit(0);
 						System.out.println("model:\033[32m" + filepath + "\033[m created successfully.\n");
 						System.exit(0);
 					}
@@ -140,6 +144,26 @@ public class ThinkApplication {
 		}
 		return (T) res;
 	}
+	public static boolean makedir(String dir) {
+		String root_path = root_path();
+		dir = dir.replace(root_path, "").replace("\\", "/").replaceAll("(/$)", "");
+		File path = new File(root_path, dir);
+		if (path.exists() && path.isDirectory()) return true;
+		String[] dirs = dir.split("/");
+		String filePath = root_path;
+		for (String d : dirs) {
+			try {
+				path = new File(filePath, d);
+				if (!path.exists() || !path.isDirectory()) Files.createDirectory(path.toPath());
+				filePath += "/" + d;
+			} catch (Exception e) {
+				System.out.println("FILE PATH CREATE FAIL:\n" + filePath + "/" + d);
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return true;
+	}
 	public static String camelize(String value) {
 		StringBuilder res = new StringBuilder();
 		String[] words = value.replaceAll("_", " ").split(" ");
@@ -183,7 +207,70 @@ public class ThinkApplication {
 		return (T) value;
 	}
 	
-	//生成实例class文件
+	//生成controller文件
+	public static String createControllerFile(String mark, boolean detail) {
+		try {
+			String packagePath = "controller";
+			String clazz = mark;
+			if (mark.contains("@")) {
+				String[] marks = mark.split("@");
+				packagePath = marks[0].toLowerCase();
+				clazz = marks[1];
+			}
+			clazz = camelize(clazz);
+			StringBuilder sb = new StringBuilder("package com.app."+packagePath+";\n\n").append("public class ").append(clazz).append(" extends Core {\n\n");
+			if (detail) {
+				sb.append("//显示资源列表\n" +
+						"\tpublic Object index() {\n" +
+						"\t\treturn this.render(null);\n" +
+						"\t}\n" +
+						"\t\n" +
+						"\t//显示创建资源表单页\n" +
+						"\tpublic Object create() {\n" +
+						"\t\tint id = this.request.get(\"id\", 0);\n" +
+						"\t}\n" +
+						"\t\n" +
+						"\t//保存新建的资源\n" +
+						"\tpublic Object save() {\n" +
+						"\t\tint id = this.request.post(\"id\", 0);\n" +
+						"\t}\n" +
+						"\t\n" +
+						"\t//显示指定的资源\n" +
+						"\tpublic Object read() {\n" +
+						"\t\tint id = this.request.get(\"id\", 0);\n" +
+						"\t}\n" +
+						"\n" +
+						"\t//显示编辑资源表单页\n" +
+						"\tpublic Object edit() {\n" +
+						"\t\tint id = this.request.get(\"id\", 0);\n" +
+						"\t}\n" +
+						"\t\n" +
+						"\t//保存更新的资源\n" +
+						"\tpublic Object update() {\n" +
+						"\t\tint id = this.request.post(\"id\", 0);\n" +
+						"\t}\n" +
+						"\t\n" +
+						"\t//删除指定资源\n" +
+						"\tpublic Object delete() {\n" +
+						"\t\tint id = this.request.post(\"id\", 0);\n" +
+						"\t}\n");
+			}
+			sb.append("\n}");
+			String path = root_path() + "/src/main/java/com/app/" + packagePath;
+			if (!makedir(path)) return null;
+			String filepath = path + "/" + clazz + ".java";
+			FileWriter writer = new FileWriter(filepath);
+			writer.write(sb.toString());
+			writer.close();
+			return filepath;
+		} catch (Exception e) {
+			System.out.println("生成controller异常");
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	//生成model文件
 	public static Connection ConnInit() {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
@@ -194,8 +281,7 @@ public class ThinkApplication {
 		}
 		return null;
 	}
-	//Db.createInstanceFile("member");
-	public static String createInstanceFile(String table, boolean detail) {
+	public static String createModelFile(String table, boolean detail) {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
@@ -224,7 +310,8 @@ public class ThinkApplication {
 				}
 				sb.append(method);
 			}
-			sb.append("\n\t//数据库操作(自动设定表名)===================================================\n" +
+			sb.append("\n\t");
+			sb.append("//数据库操作(自动设定表名)===================================================\n" +
 					"\tpublic static String tablename() {\n" +
 					"\t\tString clazz = new Object() {\n" +
 					"\t\t\tpublic String get() {\n" +
@@ -306,11 +393,11 @@ public class ThinkApplication {
 					"\tpublic static Db cached(int cached) {\n" +
 					"\t\treturn Db.name(tablename()).cached(cached);\n" +
 					"\t}\n" +
-					"\tpublic static Db pagination(boolean pagination) {\n" +
-					"\t\treturn Db.name(tablename()).pagination(pagination);\n" +
+					"\tpublic static Db pagination() {\n" +
+					"\t\treturn Db.name(tablename()).pagination();\n" +
 					"\t}\n" +
-					"\tpublic static Db pagination(boolean pagination, String paginationMark) {\n" +
-					"\t\treturn Db.name(tablename()).pagination(pagination, paginationMark);\n" +
+					"\tpublic static Db pagination(String paginationMark) {\n" +
+					"\t\treturn Db.name(tablename()).pagination(paginationMark);\n" +
 					"\t}\n" +
 					"\tpublic static Db fetchSql() {\n" +
 					"\t\treturn Db.name(tablename()).fetchSql();\n" +
@@ -358,13 +445,15 @@ public class ThinkApplication {
 					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
 					"\t}\n");
 			sb.append("\n}");
-			String filepath = root_path() + "/src/main/java/com/app/model/" + clazz + ".java";
+			String path = root_path() + "/src/main/java/com/app/model";
+			if (!makedir(path)) return null;
+			String filepath = path + "/" + clazz + ".java";
 			FileWriter writer = new FileWriter(filepath);
 			writer.write(sb.toString());
 			writer.close();
 			return filepath;
 		} catch (Exception e) {
-			System.out.println("生成实例class文件异常");
+			System.out.println("生成model异常");
 			e.printStackTrace();
 		} finally {
 			try {
