@@ -22,7 +22,7 @@ public class Login extends Base {
 			if (remember == 1) {
 				cookie("manage_token", token, 60*60*24*365);
 			}
-			String url = session("manage_gourl", String.class);
+			String url = sessionString("manage_gourl");
 			if (url != null && url.length() > 0) {
 				session("manage_gourl", null);
 				return success("tourl:"+url);

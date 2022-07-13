@@ -31,7 +31,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 public class Common {
-	static String sdkVersion = "3.7.20220711";
+	static String sdkVersion = "3.8.20220713";
 	static String rootPath;
 	static String runtimeDir;
 	static Map<String, Object> requests;
@@ -135,29 +135,32 @@ public class Common {
 		HttpServletRequest req = (HttpServletRequest) requests.get(request.getRequestURI());
 		HttpSession session = req.getSession(false);
 		if (session != null) {
-			if (value == null) {
-				try {
-					req.getSession().removeAttribute(key);
-					//req.getSession().invalidate(); //全部清空
-				} catch (Exception e) {
-					//e.printStackTrace();
-				}
-				return;
-			}
 			try {
-				req.getSession().setAttribute(key, value);
+				if (value == null) {
+					session.removeAttribute(key);
+					//session.invalidate(); //全部清空
+					return;
+				}
+				session.setAttribute(key, value);
 			} catch (Exception e) {
 				//e.printStackTrace();
 			}
 		}
 	}
-	@SuppressWarnings("unchecked")
-	public static <T> T session(String key, Class<T> clazz) {
-		Object value = session(key);
-		if (value == null) return null;
-		if (value instanceof Map) value = Common.mapToBean((Map<String, Object>) value, clazz);
-		if (value != null && value.getClass() != clazz) return null;
-		return (T) value;
+	public static String sessionString(String key) {
+		Object ret = session(key);
+		if (ret == null) return null;
+		return String.valueOf(ret);
+	}
+	public static int sessionInt(String key) {
+		Object ret = session(key);
+		if (ret == null) return 0;
+		return Integer.parseInt(String.valueOf(ret));
+	}
+	public static float sessionFloat(String key) {
+		Object ret = session(key);
+		if (ret == null) return 0;
+		return Float.parseFloat(String.valueOf(ret));
 	}
 	public static DataList sessionDataList(String key) {
 		Object ret = session(key);
@@ -194,18 +197,14 @@ public class Common {
 	public static void cookie(String key, String value, int expire) {
 		getServlet();
 		HttpServletResponse res = (HttpServletResponse) responses.get(request.getRequestURI());
-		if (value == null) {
-			try {
+		try {
+			if (value == null) {
 				Cookie cookie = new Cookie(key, "");
 				cookie.setMaxAge(0);
 				cookie.setPath("/");
 				res.addCookie(cookie);
-			} catch (Exception e) {
-				//e.printStackTrace();
+				return;
 			}
-			return;
-		}
-		try {
 			Cookie cookie = new Cookie(key, URLEncoder.encode(value, "UTF-8"));
 			if (expire > 0) cookie.setMaxAge(expire); //有效时长(单位秒), 默认为-1, 页面关闭就失效
 			cookie.setPath("/"); //设置访问该域名下某个路径时生效
@@ -603,22 +602,22 @@ public class Common {
 			"meizu", "netfront", "symbian", "ucweb", "windowsce", "palm", "operamini", "operamobi", "openwave", "nexusone", "cldc", "midp", "wap", "mobile",
 			"smartphone", "windows ce", "windows phone", "ipod", "iphone", "ipad", "android"
 		};
-		return Pattern.compile("(" + StringUtils.join(keywords, "|") + ")").matcher(getHeaders("user-agent")).find();
+		return preg_match("(" + StringUtils.join(keywords, "|") + ")", getHeaders("user-agent"));
 	}
 
 	//字符串是否数字
 	public static boolean isNumeric(Object str) {
-		return Pattern.compile("^[-+]?\\d+$").matcher(String.valueOf(str)).find();
+		return preg_match("^[-+]?\\d+$", String.valueOf(str));
 	}
 
 	//验证手机号
 	public static boolean isMobile(String str) {
-		return Pattern.compile("^13\\d{9}$|^14[5,7]\\d{8}$|^15[^4]\\d{8}$|^17[03678]\\d{8}$|^18\\d{9}$").matcher(str).find();
+		return preg_match("^13\\d{9}$|^14[5,7]\\d{8}$|^15[^4]\\d{8}$|^17[03678]\\d{8}$|^18\\d{9}$", str);
 	}
 
 	//验证座机
 	public static boolean isTel(String str) {
-		return Pattern.compile("^((\\d{3,4}-)?\\d{8}(-\\d+)?|(\\(\\d{3,4}\\))?\\d{8}(-\\d+)?)$").matcher(str).find();
+		return preg_match("^((\\d{3,4}-)?\\d{8}(-\\d+)?|(\\(\\d{3,4}\\))?\\d{8}(-\\d+)?)$", str);
 	}
 
 	//验证电话号码(包括手机号与座机)
@@ -628,12 +627,12 @@ public class Common {
 
 	//验证邮箱
 	public static boolean isEmail(String str) {
-		return Pattern.compile("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$").matcher(str).find();
+		return preg_match("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$", str);
 	}
 
 	//验证is_date
 	public static boolean isDate(String str) {
-		return Pattern.compile("^(?:(?!0000)\\d{4}[/-](?:(?:0?[1-9]|1[0-2])[/-](?:0?[1-9]|1\\d|2[0-8])|(?:0?[13-9]|1[0-2])[/-](?:29|30)|(?:0?[13578]|1[02])[/-]31)|(?:\\d{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)[/-]0?2[/-]29)$").matcher(str).find();
+		return preg_match("^(?:(?!0000)\\d{4}[/-](?:(?:0?[1-9]|1[0-2])[/-](?:0?[1-9]|1\\d|2[0-8])|(?:0?[13-9]|1[0-2])[/-](?:29|30)|(?:0?[13578]|1[02])[/-]31)|(?:\\d{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)[/-]0?2[/-]29)$", str);
 	}
 
 	//验证邮箱
@@ -769,9 +768,9 @@ public class Common {
 			matcher.appendTail(str);
 			value = str.toString();
 		}
-		if (Pattern.compile("^\\[.*]$").matcher(value).find()) {
+		if (preg_match("^\\[.*]$", value)) {
 			return (T) JSONObject.parseArray(value);
-		} else if (Pattern.compile("^\\{.*}$").matcher(value).find()) {
+		} else if (preg_match("^\\{.*}$", value)) {
 			return (T) JSON.parseObject(value);
 		}
 		return (T) value;
@@ -1292,7 +1291,7 @@ public class Common {
 			} else if (qs instanceof JSONArray) {
 				qs = StringUtils.join(((JSONArray)qs).toArray(new Object[0]), "&");
 			}
-			str += (Pattern.compile("[?&]").matcher(str).find() ? "&" : "?") + qs;
+			str += (preg_match("[?&]", str) ? "&" : "?") + qs;
 		}
 		return str;
 	}
@@ -1315,7 +1314,7 @@ public class Common {
 					if (url.charAt(0) == '/') {
 						url = (imgDomain.length() > 0 ? imgDomain : host) + url;
 					} else {
-						if (Pattern.compile("^((http|https|ftp)://)?[\\w-_]+(\\.[\\w\\-_]+)+([\\w\\-.,@?^=%&:/~+#]*[\\w\\-@?^=%&/~+#])?$").matcher(host + "/" + url).find()) {
+						if (preg_match("^((http|https|ftp)://)?[\\w-_]+(\\.[\\w\\-_]+)+([\\w\\-.,@?^=%&:/~+#]*[\\w\\-@?^=%&/~+#])?$", host + "/" + url)) {
 							url = (imgDomain.length() > 0 ? imgDomain : host) + "/" + url;
 						} else {
 							url = url.replace("\"/uploads/", "\"" + host + "/uploads/");
@@ -1988,9 +1987,6 @@ public class Common {
 	public static Object view(Object data, String webPath) {
 		return view(data, webPath, null);
 	}
-	public static Object view(Object data, String webPath, boolean isWriter) {
-		return view(data, webPath, null, isWriter);
-	}
 	public static Object view(Object data, String webPath, Object extend) {
 		return view(data, webPath, extend, false);
 	}
@@ -2130,11 +2126,11 @@ public class Common {
 		getServlet();
 		HttpServletRequest req = (HttpServletRequest) requests.get(request.getRequestURI());
 		String dataValue = String.valueOf(data);
-		boolean isStart = Pattern.compile("^[@#]").matcher(dataValue).find();
+		boolean isStart = preg_match("^[@#]", dataValue);
 		//保持tourl:|stay:在data, .html|.view|<tag>|json:|xml:|view:|display:在msg
 		if ((data instanceof String) &&
-				(isStart || Pattern.compile("\\.html$").matcher(dataValue).find() || Pattern.compile("<[^>]+>").matcher(dataValue).find() ||
-						Pattern.compile("^(json|xml|view|display):/").matcher(dataValue).find() || Pattern.compile("^(tourl|redirect|stay):").matcher(dataValue).find() )) {
+				(isStart || preg_match("\\.html$", dataValue) || preg_match("<[^>]+>", dataValue) ||
+						preg_match("^(json|xml|view|display):/", dataValue) || preg_match("^(tourl|redirect|stay):", dataValue) )) {
 			String tmp = String.valueOf(data);
 			data = isStart ? null : msg;
 			msg = tmp;
@@ -2145,23 +2141,23 @@ public class Common {
 				if (data != null) {
 					json.put("data", DataMap.dataToMap(data));
 				}
-				if (Pattern.compile("^(tourl|redirect):").matcher(msg).find()) {
+				if (preg_match("^(tourl|redirect):", msg)) {
 					json.put("toUrl", msg.replaceAll("^(tourl|redirect):", ""));
 					msg = "success";
-				} else if (Pattern.compile("^(stay):").matcher(msg).find()) {
+				} else if (preg_match("^(stay):", msg)) {
 					json.put("stay", 1);
 					msg = "success";
 				}
-				json.put("msg", Pattern.compile("^[@#]").matcher(msg).find() ? "success" : msg);
+				json.put("msg", preg_match("^[@#]", msg) ? "success" : msg);
 				json.put("code", 0);
 				if (extend instanceof Map) json.putAll(JSONObject.parseObject(JSON.toJSONString(DataMap.dataToMap(extend))));
 				return json;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		} else if (Pattern.compile("^(tourl|redirect):").matcher(msg).find()) {
+		} else if (preg_match("^(tourl|redirect):", msg)) {
 			return "redirect:"+msg.replaceAll("^(tourl|redirect):", "");
-		} else if (msg.startsWith("@") || msg.startsWith("#")) {
+		} else if (preg_match("^[@#]", msg)) {
 			return view(data, msg.substring(1), extend, msg.startsWith("#"));
 		} else {
 			boolean isWriter = false;
@@ -2183,7 +2179,7 @@ public class Common {
 		return error("error");
 	}
 	public static Object error(String msg) {
-		return error(msg, 0);
+		return error(msg, -1);
 	}
 	public static Object error(String msg, String url) {
 		return script(msg, url);
@@ -2191,16 +2187,26 @@ public class Common {
 	public static Object error(String msg, int code) {
 		if (code == -9 || code == -100) code = -10;
 		if (isAjax()) {
+			if (preg_match("tips=", msg)) {
+				String[] webPaths = trim(msg, "/").replaceFirst("^[@#]", "").split("\\?");
+				if (webPaths.length > 1) {
+					Map<String, Object> map = parse_str(webPaths[1]);
+					msg = String.valueOf(map.get("tips"));
+				}
+			} else {
+				msg = "error";
+			}
 			Map<String, Object> json = new HashMap<>();
-			json.put("msg", msg.matches("[@#]/?error") ? "error" : msg.replaceAll("^[@#]/?error\\?tips=", "").replace("<br>", " "));
+			json.put("msg", msg);
 			json.put("code", code);
 			return json;
-		} else if (Pattern.compile("^[@#]").matcher(msg).find()) {
-			return view(null, msg.substring(1).replace(root_path(), ""), msg.startsWith("#"));
+		} else if (preg_match("^[@#]", msg)) {
+			//@号返回error页代码, #号直接把error页输出到html(供暂时无法return的地方用)
+			return view(null, msg.substring(1).replace(root_path(), ""), null, msg.startsWith("#"));
 		} else {
 			switch (code) {
 				case -10:return "redirect:/passport/login";
-				case -1:return "redirect:/";
+				case -2:return "redirect:/";
 				default:return historyBack(msg);
 			}
 		}

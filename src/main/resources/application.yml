@@ -15,10 +15,10 @@ spring:
     banner-mode: off
   #数据库(主)
   datasource:
-    url: jdbc:mysql://localhost:3306/hifun?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://localhost:3306/pil?useUnicode=true&characterEncoding=utf8
     username: root
     password: 1e4a3e55d8922cea
-    prefix: hi_
+    prefix: pil_
     cache-dir: sql
     #数据库(从)
     slaver:

@@ -75,6 +75,7 @@ public class Base {
 	
 	//重定向
 	public void redirect(String url) {
+		this.appKeepRunning = false;
 		try {
 			this.response.sendRedirect(url);
 		} catch (IOException e) {
@@ -92,8 +93,14 @@ public class Base {
 	public void session(String key, Object value) {
 		Common.session(key, value);
 	}
-	public <T> T session(String key, Class<T> clazz) {
-		return Common.session(key, clazz);
+	public String sessionString(String key) {
+		return Common.sessionString(key);
+	}
+	public int sessionInt(String key) {
+		return Common.sessionInt(key);
+	}
+	public float sessionFloat(String key) {
+		return Common.sessionFloat(key);
 	}
 	public DataList sessionDataList(String key) {
 		return Common.sessionDataList(key);
@@ -196,14 +203,5 @@ public class Base {
 	}
 	public Object error(String msg, int code) {
 		return Common.error(msg, code);
-	}
-	public void errorWrite() {
-		Common.outputHtml((String) error());
-	}
-	public void errorWrite(String msg) {
-		Common.outputHtml((String) error(msg));
-	}
-	public void errorWrite(String msg, int code) {
-		Common.outputHtml((String) error(msg, code));
 	}
 }

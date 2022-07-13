@@ -88,18 +88,13 @@ public class Core extends Base {
 	public DataMap get_member_from_token(String token) {
 		return get_member_from_token(token, false);
 	}
-	public DataMap get_member_from_token(String token, boolean is_session) {
+	public DataMap get_member_from_token(String token, boolean is_force) {
 		if (token == null || token.length() == 0) return null;
-		if (this.memberObj == null || is_session) {
-			DataMap member = com.app.model.Member.where("token='" + token + "'").field("*, null as grade").find();
+		if (this.memberObj == null || is_force) {
+			DataMap member = com.app.model.Member.where("token='" + token + "'").find();
 			if (member == null) {
 				member = sessionDataMap("member");
-				if (member == null) {
-					if (is_session) {
-						errorWrite("该账号已在其他设备登录", -9);
-					}
-					return null;
-				}
+				if (member == null) return null;
 			}
 			/*DataMap shop = com.app.model.Shop.alias("s").leftJoin("member m", "s.memberId=m.id").where("m.id='" + member.get("id") + "'").field("s.*").find();
 			if (shop != null) {
@@ -159,11 +154,11 @@ public class Core extends Base {
 		if (!this._check_login()) {
 			this.appKeepRunning = false;
 			session("api_gourl", Common.url());
-			Object ret = Common.error("请登录", -100);
+			Object ret = error("请登录", -100);
 			try {
 				if (ret instanceof String) {
-					if (((String)ret).startsWith("tourl:")) {
-						this.response.sendRedirect(((String) ret).replaceFirst("tourl:", ""));
+					if (((String)ret).startsWith("tourl:") || ((String)ret).startsWith("redirect:")) {
+						this.redirect(((String) ret).replaceFirst("tourl:", "").replaceFirst("redirect:", ""));
 					} else {
 						PrintWriter out = this.response.getWriter();
 						out.write((String) ret);

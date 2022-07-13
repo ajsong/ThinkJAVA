@@ -36,11 +36,11 @@ public class Start {
 			return clazz.getMethod(act).invoke(instance);
 		} catch (ClassNotFoundException | NoSuchMethodException e) {
 			//e.printStackTrace();
-			count++;
+			//count++;
 			//request.getSession().setAttribute("appActMissing", String.valueOf(count));
 			return Common.error("@error?type=404&tips=HERE IS NO PAGES CALLED "+app+"/"+act);
 		} catch (Exception e) {
-			System.out.println("getMethod error in url: " + request.getRequestURI());
+			System.out.println("Error in url: " + request.getRequestURI());
 			e.printStackTrace();
 		}
 		return Common.error("@error");

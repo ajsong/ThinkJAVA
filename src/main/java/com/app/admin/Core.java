@@ -1,11 +1,13 @@
 package com.app.admin;
 
 import com.alibaba.fastjson.*;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.framework.Base;
 import com.framework.closure.*;
 import com.framework.tool.*;
 import org.apache.commons.lang3.StringUtils;
 import javax.servlet.http.*;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class Core extends Base {
@@ -52,6 +54,7 @@ public class Core extends Base {
 				session("manage", manage);
 				return true;
 			}
+			cookie("manage_token", null);
 		}
 		return false;
 	}
@@ -62,10 +65,23 @@ public class Core extends Base {
 		if (!this._check_login()) {
 			this.appKeepRunning = false;
 			session("manage_gourl", Common.url());
-			if (isAjax()) {
-				error("登录失效", -2);
-			} else {
-				this.redirect("/" + this.module + "/login");
+			Object ret = error("登录失效", -2);
+			try {
+				if (ret instanceof String) {
+					if (((String)ret).startsWith("tourl:") || ((String)ret).startsWith("redirect:")) {
+						this.redirect("/" + this.module + "/login");
+					} else {
+						PrintWriter out = this.response.getWriter();
+						out.write((String) ret);
+						out.close();
+					}
+				} else {
+					PrintWriter out = this.response.getWriter();
+					out.write(JSON.toJSONString(ret, SerializerFeature.WriteMapNullValue));
+					out.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			return false;
 		}
