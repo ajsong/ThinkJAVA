@@ -4,17 +4,18 @@ import com.framework.tool.*;
 import java.lang.reflect.*;
 import java.util.*;
 
-public class ManageGroup extends Core {
+public class MdexTxs extends Core {
+	static String connection = "tb";
 
 	//数据库操作(自动设定表名)===================================================
 	public static String connectname() {
 		String connection = "";
-		Field[] fields = ManageGroup.class.getDeclaredFields();
+		Field[] fields = MdexTxs.class.getDeclaredFields();
 		try {
 			for (Field field : fields) {
 				field.setAccessible(true);
 				if (Modifier.isStatic(field.getModifiers())) {
-					if (field.getName().equals("connection")) connection = (String) field.get(ManageGroup.class);
+					if (field.getName().equals("connection")) connection = (String) field.get(MdexTxs.class);
 				}
 			}
 		} catch (Exception e) {
@@ -26,13 +27,13 @@ public class ManageGroup extends Core {
 	public static String tablename() {
 		String name = "";
 		String table = "";
-		Field[] fields = ManageGroup.class.getDeclaredFields();
+		Field[] fields = MdexTxs.class.getDeclaredFields();
 		try {
 			for (Field field : fields) {
 				field.setAccessible(true);
 				if (Modifier.isStatic(field.getModifiers())) {
-					if (field.getName().equals("name")) name = (String) field.get(ManageGroup.class);
-					if (field.getName().equals("table")) table = (String) field.get(ManageGroup.class);
+					if (field.getName().equals("name")) name = (String) field.get(MdexTxs.class);
+					if (field.getName().equals("table")) table = (String) field.get(MdexTxs.class);
 				}
 			}
 		} catch (Exception e) {

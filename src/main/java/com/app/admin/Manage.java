@@ -1,6 +1,6 @@
 package com.app.admin;
 
-import com.app.model.ManageGroup;
+import com.app.model.*;
 import com.framework.closure.*;
 import com.framework.tool.*;
 import java.util.*;

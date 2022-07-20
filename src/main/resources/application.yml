@@ -13,12 +13,18 @@ logging:
 spring:
   main:
     banner-mode: off
-  #数据库(主)
   datasource:
-    url: jdbc:mysql://localhost:3306/pil?useUnicode=true&characterEncoding=utf8
-    username: root
-    password: 1e4a3e55d8922cea
-    prefix: pil_
+    #数据库(主)
+    default:
+      url: jdbc:mysql://localhost:3306/pil?useUnicode=true&characterEncoding=utf8
+      username: root
+      password: 1e4a3e55d8922cea
+      prefix: pil_
+    tb:
+      url: jdbc:mysql://localhost:3306/db_pil_txs?useUnicode=true&characterEncoding=utf8
+      username: root
+      password: 1e4a3e55d8922cea
+      prefix: tb_
     cache-dir: sql
     #数据库(从)
     slaver:

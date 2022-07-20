@@ -28,14 +28,20 @@ public class ThinkApplication {
 						argument = args[2];
 					}
 					if (commands[1].equals("controller")) {
-						String filepath = createControllerFile(argument, detail);
-						if (filepath == null) System.exit(0);
-						System.out.println("controller:\033[32m" + filepath + "\033[m created successfully.\n");
+						String[] arguments = argument.split(",");
+						for (String arg : arguments) {
+							String filepath = createControllerFile(arg, detail);
+							if (filepath != null) System.out.println("controller:\033[32m" + filepath + "\033[m created successfully.");
+						}
+						System.out.println();
 						System.exit(0);
 					} else if (commands[1].equals("model")) {
-						String filepath = createModelFile(uncamelize(argument), detail);
-						if (filepath == null) System.exit(0);
-						System.out.println("model:\033[32m" + filepath + "\033[m created successfully.\n");
+						String[] arguments = argument.split(",");
+						for (String arg : arguments) {
+							String filepath = createModelFile(uncamelize(arg), detail);
+							if (filepath != null) System.out.println("model:\033[32m" + filepath + "\033[m created successfully.");
+						}
+						System.out.println();
 						System.exit(0);
 					}
 				}
@@ -307,7 +313,7 @@ public class ThinkApplication {
 				System.out.println("model:\033[31m" + filepath + "\033[m already exist.\n");
 				return null;
 			}
-			StringBuilder sb = new StringBuilder("package com.app.model;\n\nimport com.framework.tool.*;\nimport java.util.*;\n\n")
+			StringBuilder sb = new StringBuilder("package com.app.model;\n\nimport com.framework.tool.*;\nimport java.lang.reflect.*;\nimport java.util.*;\n\n")
 					.append("public class ").append(clazz).append(" extends Core {\n");
 			if (detail) {
 				sb.append("\n");
@@ -333,7 +339,39 @@ public class ThinkApplication {
 			}
 			sb.append("\n\t");
 			sb.append("//数据库操作(自动设定表名)===================================================\n" +
+					"\tpublic static String connectname() {\n" +
+					"\t\tString connection = \"\";\n" +
+					"\t\tField[] fields = "+clazz+".class.getDeclaredFields();\n" +
+					"\t\ttry {\n" +
+					"\t\t\tfor (Field field : fields) {\n" +
+					"\t\t\t\tfield.setAccessible(true);\n" +
+					"\t\t\t\tif (Modifier.isStatic(field.getModifiers())) {\n" +
+					"\t\t\t\t\tif (field.getName().equals(\"connection\")) connection = (String) field.get("+clazz+".class);\n" +
+					"\t\t\t\t}\n" +
+					"\t\t\t}\n" +
+					"\t\t} catch (Exception e) {\n" +
+					"\t\t\te.printStackTrace();\n" +
+					"\t\t}\n" +
+					"\t\tif (connection.length() > 0) return connection;\n" +
+					"\t\treturn null;\n" +
+					"\t}\n" +
 					"\tpublic static String tablename() {\n" +
+					"\t\tString name = \"\";\n" +
+					"\t\tString table = \"\";\n" +
+					"\t\tField[] fields = "+clazz+".class.getDeclaredFields();\n" +
+					"\t\ttry {\n" +
+					"\t\t\tfor (Field field : fields) {\n" +
+					"\t\t\t\tfield.setAccessible(true);\n" +
+					"\t\t\t\tif (Modifier.isStatic(field.getModifiers())) {\n" +
+					"\t\t\t\t\tif (field.getName().equals(\"name\")) name = (String) field.get("+clazz+".class);\n" +
+					"\t\t\t\t\tif (field.getName().equals(\"table\")) table = (String) field.get("+clazz+".class);\n" +
+					"\t\t\t\t}\n" +
+					"\t\t\t}\n" +
+					"\t\t} catch (Exception e) {\n" +
+					"\t\t\te.printStackTrace();\n" +
+					"\t\t}\n" +
+					"\t\tif (name.length() > 0) return name;\n" +
+					"\t\tif (table.length() > 0) return table;\n" +
 					"\t\tString clazz = new Object() {\n" +
 					"\t\t\tpublic String get() {\n" +
 					"\t\t\t\tString clazz = this.getClass().getName();\n" +
@@ -343,129 +381,132 @@ public class ThinkApplication {
 					"\t\treturn Common.uncamelize(clazz.substring(clazz.lastIndexOf(\".\")+1));\n" +
 					"\t}\n" +
 					"\tpublic static Db alias(String alias) {\n" +
-					"\t\treturn Db.name(tablename()).alias(alias);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).alias(alias);\n" +
 					"\t}\n" +
 					"\tpublic static Db leftJoin(String table, String on) {\n" +
-					"\t\treturn Db.name(tablename()).leftJoin(table, on);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).leftJoin(table, on);\n" +
 					"\t}\n" +
 					"\tpublic static Db rightJoin(String table, String on) {\n" +
-					"\t\treturn Db.name(tablename()).rightJoin(table, on);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).rightJoin(table, on);\n" +
 					"\t}\n" +
 					"\tpublic static Db innerJoin(String table, String on) {\n" +
-					"\t\treturn Db.name(tablename()).innerJoin(table, on);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).innerJoin(table, on);\n" +
 					"\t}\n" +
 					"\tpublic static Db crossJoin(String table) {\n" +
-					"\t\treturn Db.name(tablename()).crossJoin(table);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).crossJoin(table);\n" +
 					"\t}\n" +
 					"\tpublic static Db where(Object where, Object...whereParams) {\n" +
-					"\t\treturn Db.name(tablename()).where(where, whereParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).where(where, whereParams);\n" +
 					"\t}\n" +
 					"\tpublic static Db whereOr(Object where, Object...whereParams) {\n" +
-					"\t\treturn Db.name(tablename()).whereOr(where, whereParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).whereOr(where, whereParams);\n" +
 					"\t}\n" +
 					"\tpublic static Db whereDay(String field, String mark) {\n" +
-					"\t\treturn Db.name(tablename()).whereDay(field, mark);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).whereDay(field, mark);\n" +
 					"\t}\n" +
 					"\tpublic static Db whereTime(String field, String value) {\n" +
-					"\t\treturn Db.name(tablename()).whereTime(field, value);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).whereTime(field, value);\n" +
 					"\t}\n" +
 					"\tpublic static Db whereTime(String field, String operator, String value) {\n" +
-					"\t\treturn Db.name(tablename()).whereTime(field, operator, value);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).whereTime(field, operator, value);\n" +
 					"\t}\n" +
 					"\tpublic static Db whereTime(String interval, String field, String operator, Object value) {\n" +
-					"\t\treturn Db.name(tablename()).whereTime(interval, field, operator, value);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).whereTime(interval, field, operator, value);\n" +
 					"\t}\n" +
 					"\tpublic static Db field(Object field) {\n" +
-					"\t\treturn Db.name(tablename()).field(field);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).field(field);\n" +
 					"\t}\n" +
 					"\tpublic static Db distinct(String field) {\n" +
-					"\t\treturn Db.name(tablename()).distinct(field);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).distinct(field);\n" +
 					"\t}\n" +
 					"\tpublic static Db like(String field, String str) {\n" +
-					"\t\treturn Db.name(tablename()).like(field, str);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).like(field, str);\n" +
 					"\t}\n" +
 					"\tpublic static Db like(String field, String str, String escape) {\n" +
-					"\t\treturn Db.name(tablename()).like(field, str, escape);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).like(field, str, escape);\n" +
 					"\t}\n" +
 					"\tpublic static Db order(String field) {\n" +
-					"\t\treturn Db.name(tablename()).order(field);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).order(field);\n" +
 					"\t}\n" +
 					"\tpublic static Db order(String field, String order) {\n" +
-					"\t\treturn Db.name(tablename()).order(field, order);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).order(field, order);\n" +
 					"\t}\n" +
 					"\tpublic static Db orderField(String field, String value) {\n" +
-					"\t\treturn Db.name(tablename()).orderField(field, value);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).orderField(field, value);\n" +
 					"\t}\n" +
 					"\tpublic static Db group(String group) {\n" +
-					"\t\treturn Db.name(tablename()).group(group);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).group(group);\n" +
 					"\t}\n" +
 					"\tpublic static Db having(String having) {\n" +
-					"\t\treturn Db.name(tablename()).having(having);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).having(having);\n" +
 					"\t}\n" +
 					"\tpublic static Db offset(int offset) {\n" +
-					"\t\treturn Db.name(tablename()).offset(offset);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).offset(offset);\n" +
 					"\t}\n" +
 					"\tpublic static Db pagesize(int pagesize) {\n" +
-					"\t\treturn Db.name(tablename()).pagesize(pagesize);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).pagesize(pagesize);\n" +
+					"\t}\n" +
+					"\tpublic static Db limit(int pagesize) {\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).limit(pagesize);\n" +
 					"\t}\n" +
 					"\tpublic static Db limit(int offset, int pagesize) {\n" +
-					"\t\treturn Db.name(tablename()).limit(offset, pagesize);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).limit(offset, pagesize);\n" +
 					"\t}\n" +
 					"\tpublic static Db cached(int cached) {\n" +
-					"\t\treturn Db.name(tablename()).cached(cached);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).cached(cached);\n" +
 					"\t}\n" +
 					"\tpublic static Db pagination() {\n" +
-					"\t\treturn Db.name(tablename()).pagination();\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).pagination();\n" +
 					"\t}\n" +
 					"\tpublic static Db pagination(String paginationMark) {\n" +
-					"\t\treturn Db.name(tablename()).pagination(paginationMark);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).pagination(paginationMark);\n" +
 					"\t}\n" +
 					"\tpublic static Db fetchSql() {\n" +
-					"\t\treturn Db.name(tablename()).fetchSql();\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).fetchSql();\n" +
 					"\t}\n" +
 					"\tpublic static boolean exist() {\n" +
-					"\t\treturn Db.name(tablename()).exist();\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).exist();\n" +
 					"\t}\n" +
 					"\tpublic static int count() {\n" +
-					"\t\treturn Db.name(tablename()).count();\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).count();\n" +
 					"\t}\n" +
 					"\tpublic static DataList select(Object field) {\n" +
-					"\t\treturn Db.name(tablename()).select(field);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).select(field);\n" +
 					"\t}\n" +
 					"\tpublic static DataList select() {\n" +
-					"\t\treturn Db.name(tablename()).select();\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).select();\n" +
 					"\t}\n" +
 					"\tpublic static int insert(String data, Object...dataParams) {\n" +
-					"\t\treturn Db.name(tablename()).insert(data, dataParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insert(data, dataParams);\n" +
 					"\t}\n" +
 					"\tpublic static int insert(List<String> data, Object...dataParams) {\n" +
-					"\t\treturn Db.name(tablename()).insert(data, dataParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insert(data, dataParams);\n" +
 					"\t}\n" +
 					"\tpublic static int insert(String[] data, Object...dataParams) {\n" +
-					"\t\treturn Db.name(tablename()).insert(data, dataParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insert(data, dataParams);\n" +
 					"\t}\n" +
 					"\tpublic static int insert(Map<String, Object> datas) {\n" +
-					"\t\treturn Db.name(tablename()).insert(datas);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insert(datas);\n" +
 					"\t}\n" +
 					"\tpublic static int insert(String[] data, List<Object> dataParams) {\n" +
-					"\t\treturn Db.name(tablename()).insert(data, dataParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insert(data, dataParams);\n" +
 					"\t}\n" +
 					"\tpublic static int insertGetId(String data, Object...dataParams) {\n" +
-					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insertGetId(data, dataParams);\n" +
 					"\t}\n" +
 					"\tpublic static int insertGetId(List<String> data, Object...dataParams) {\n" +
-					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insertGetId(data, dataParams);\n" +
 					"\t}\n" +
 					"\tpublic static int insertGetId(String[] data, Object...dataParams) {\n" +
-					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insertGetId(data, dataParams);\n" +
 					"\t}\n" +
 					"\tpublic static int insertGetId(Map<String, Object> datas) {\n" +
-					"\t\treturn Db.name(tablename()).insertGetId(datas);\n" +
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insertGetId(datas);\n" +
 					"\t}\n" +
 					"\tpublic static int insertGetId(String[] data, List<Object> dataParams) {\n" +
-					"\t\treturn Db.name(tablename()).insertGetId(data, dataParams);\n" +
-					"\t}\n");
-			sb.append("\n}");
+					"\t\tDb.connect(connectname());return Db.name(tablename()).insertGetId(data, dataParams);\n" +
+					"\t}");
+			sb.append("\n\n}");
 			FileWriter writer = new FileWriter(filepath);
 			writer.write(sb.toString());
 			writer.close();

@@ -1,4 +1,4 @@
-//Developed by @mario 2.8.20220711
+//Developed by @mario 3.0.20220720
 package com.framework.tool;
 
 import com.alibaba.fastjson.*;
@@ -15,17 +15,23 @@ import java.util.Date;
 import java.util.regex.*;
 
 public class Db {
-	static Db db = null;
+	public static final String MASTER = "master";
+	public static final String SLAVER = "slaver";
+	
 	static int dbType = 0; //0:Mysql, 1:SQLite
 	static String sqliteDatabase = "";
 	static String sqliteDir = "sqlite";
+	static String default_host;
+	static String default_username;
+	static String default_password;
+	static String default_prefix;
 	static String host;
 	static String username;
 	static String password;
+	static String prefix;
 	static String slaverHost;
 	static String slaverUsername;
 	static String slaverPassword;
-	static String prefix;
 	static String cacheType;
 	static String cacheDir;
 	static String runtimeDir;
@@ -54,25 +60,29 @@ public class Db {
 	private boolean fetchSql = false;
 
 	static {
-		host = Common.getYml("spring.datasource.url", "");
-		username = Common.getYml("spring.datasource.username", "");
-		password = Common.getYml("spring.datasource.password", "");
+		default_host = Common.getYml("spring.datasource.default.url", "");
+		default_username = Common.getYml("spring.datasource.default.username", "");
+		default_password = Common.getYml("spring.datasource.default.password", "");
+		default_prefix = Common.getYml("spring.datasource.default.prefix", "");
+		host = default_host;
+		username = default_username;
+		password = default_password;
+		prefix = default_prefix;
 		slaverHost = Common.getYml("spring.datasource.slaver.url", host);
 		slaverUsername = Common.getYml("spring.datasource.slaver.username", username);
 		slaverPassword = Common.getYml("spring.datasource.slaver.password", password);
-		prefix = Common.getYml("spring.datasource.prefix", "");
 		cacheType = Common.getYml("sdk.cache.type", "");
 		cacheDir = Common.getYml("spring.datasource.cache-dir", "sql");
 		runtimeDir = Common.getYml("sdk.runtime.dir", "runtime");
 		rootPath = Common.root_path();
 	}
 
-	//数据库连接, connectionType:[0读|1写]
-	public static void init(int connectionType) {
+	//数据库连接, deployType:部署方式[0读|1写]
+	public static void init(String deployType) {
 		try {
 			if (dbType == 0) {
 				Class.forName("com.mysql.cj.jdbc.Driver");
-				if (connectionType == 0) {
+				if (deployType.equals(MASTER)) {
 					conn = DriverManager.getConnection(host, username, password);
 				} else {
 					conn = DriverManager.getConnection(slaverHost, slaverUsername, slaverPassword);
@@ -91,47 +101,49 @@ public class Db {
 			e.printStackTrace();
 		}
 	}
-	//创建单例
-	public static Db name() {
-		return Db.name("");
+	//切换连接参数
+	public static void connect() {
+		Db.connect("default");
 	}
-	public static Db name(String table) {
-		return Db.name(table, "");
-	}
-	public static Db name(String table, String sqliteTable) {
-		if (table.startsWith("~")) {
+	public static void connect(String key) {
+		if (key == null || key.length() == 0) key = "default";
+		if (key.startsWith("~")) {
 			//连接SQLite数据库
 			/*<dependency>
 				<groupId>org.xerial</groupId>
 				<artifactId>sqlite-jdbc</artifactId>
 			</dependency>*/
 			dbType = 1;
-			sqliteDatabase = table.substring(1);
-			Db Db =  new Db();
-			if (sqliteTable.length() > 0) Db.table(sqliteTable);
-			return db;
+			sqliteDatabase = key.substring(1);
+		} else {
+			//连接Mysql数据库
+			dbType = 0;
+			host = Common.getYml("spring.datasource."+key+".url", "");
+			username = Common.getYml("spring.datasource."+key+".username", "");
+			password = Common.getYml("spring.datasource."+key+".password", "");
+			prefix = Common.getYml("spring.datasource."+key+".prefix", "");
 		}
-		//连接Mysql数据库
-		dbType = 0;
-		if (db == null) db = new Db();
-		if (table.length() > 0) db.table(table);
-		return db;
+	}
+	//指定表名
+	public static Db name(String table) {
+		return Db.table(table);
 	}
 	//指定表名, 可设置别名, 如: table('table t'), 支持双减号转表前缀(不区分大小写), 如: table('--TABLE-- t')
-	public Db table(String table) {
+	public static Db table(String table) {
+		Db db = new Db();
 		boolean restore = true;
 		if (table.startsWith("!")) { //表名前加!代表不restore
 			restore = false;
 			table = table.substring(1);
 		}
-		if (restore) restore();
+		if (restore) db.restore();
 		if (table.contains(" ")) {
-			String[] tables = table.split(" ");
+			String[] tables = table.replaceAll("\\s+", " ").split(" ");
 			table = tables[0];
-			this.alias = tables[1];
+			db.alias = tables[1];
 		}
-		this.table = Db.replaceTable(table);
-		return this;
+		db.table = Db.replaceTable(table);
+		return db;
 	}
 	//表别名
 	public Db alias(String alias) {
@@ -335,7 +347,7 @@ public class Db {
 					List<String> fieldArray = new ArrayList<>();
 					String[] items = ((String)field).split("\\|");
 					String sql = Db.replaceTable("SHOW COLUMNS FROM " + this.table);
-					if (conn == null) Db.init(0);
+					if (conn == null) Db.init(MASTER);
 					ps = conn.prepareStatement(sql);
 					ResultSet rs = ps.executeQuery();
 					while (rs.next()) {
@@ -403,6 +415,10 @@ public class Db {
 		return this;
 	}
 	//设定记录偏移量与返回记录最大数目
+	public Db limit(int pagesize) {
+		this.pagesize = pagesize;
+		return this;
+	}
 	public Db limit(int offset, int pagesize) {
 		this.offset = offset;
 		this.pagesize = pagesize;
@@ -515,7 +531,7 @@ public class Db {
 	}
 	//查询某列值
 	@SuppressWarnings("unchecked")
-	public <T> T[] column(String field, Class<T> type) {
+	public <T> T[] column(String field) {
 		try {
 			DataList list = field(field).select();
 			if (list == null) return null;
@@ -553,7 +569,7 @@ public class Db {
 			} else if (this.pagination && this.pagesize != 1) {
 				_setPagination();
 			}
-			if (conn == null) Db.init(0);
+			if (conn == null) Db.init(MASTER);
 			ps = conn.prepareStatement(sql);
 			if (this.whereParams != null) {
 				for (int i = 0; i < this.whereParams.size(); i++) { //绑定参数
@@ -628,7 +644,7 @@ public class Db {
 	}
 	//查询某列值(使用对象)
 	@SuppressWarnings("unchecked")
-	public <T, R> R[] column(String field, Class<T> clazz, Class<R> type) {
+	public <T, R> R[] column(String field, Class<T> clazz) {
 		try {
 			List<T> list = field(field).select(clazz);
 			if (list == null) return null;
@@ -664,7 +680,7 @@ public class Db {
 			} else if (this.pagination && this.pagesize != 1) {
 				_setPagination();
 			}
-			if (conn == null) Db.init(0);
+			if (conn == null) Db.init(MASTER);
 			ps = conn.prepareStatement(sql);
 			if (this.whereParams != null) {
 				for (int i = 0; i < this.whereParams.size(); i++) { //绑定参数
@@ -748,7 +764,7 @@ public class Db {
 		}
 		try {
 			if (this.fetchSql) System.out.println(sql);
-			if (conn == null) Db.init(0);
+			if (conn == null) Db.init(MASTER);
 			ps = conn.prepareStatement(sql);
 			if (this.whereParams != null) {
 				for (int i = 0; i < this.whereParams.size(); i++) {
@@ -997,7 +1013,7 @@ public class Db {
 			sql = new StringBuilder(sql.toString().replaceAll("(^, |, $)", "")).append(")");
 			String sq = Db.replaceTable(sql.toString());
 			if (this.fetchSql) System.out.println(sq);
-			if (conn == null) Db.init(1);
+			if (conn == null) Db.init(SLAVER);
 			ps =  conn.prepareStatement(sq);
 			int k = 0;
 			if (dataParams != null) {
@@ -1125,7 +1141,7 @@ public class Db {
 			if (this.pagesize > 0) sql.append(" LIMIT ").append(this.pagesize);
 			String sq = Db.replaceTable(sql.toString());
 			if (this.fetchSql) System.out.println(sq);
-			if (conn == null) Db.init(1);
+			if (conn == null) Db.init(SLAVER);
 			ps =  conn.prepareStatement(sq);
 			k = 0;
 			if (dataParams != null) {
@@ -1165,7 +1181,7 @@ public class Db {
 			if (this.where.length() > 0) sql.append(" WHERE ").append(this.where);
 			String sq = Db.replaceTable(sql.toString());
 			if (this.fetchSql) System.out.println(sq);
-			if (conn == null) Db.init(1);
+			if (conn == null) Db.init(SLAVER);
 			ps =  conn.prepareStatement(sq);
 			int k = 0;
 			if (this.whereParams != null) {
@@ -1189,7 +1205,7 @@ public class Db {
 		DataList res = new DataList();
 		try {
 			sql = Db.replaceTable(sql);
-			if (conn == null) Db.init(0);
+			if (conn == null) Db.init(MASTER);
 			ps =  conn.prepareStatement(sql);
 			for (int i = 0; i < dataParams.length; i++) {
 				ps.setObject(i + 1, dataParams[i]);
@@ -1221,7 +1237,7 @@ public class Db {
 		int row = 0;
 		try {
 			sql = Db.replaceTable(sql);
-			if (conn == null) Db.init(1);
+			if (conn == null) Db.init(SLAVER);
 			ps =  conn.prepareStatement(sql);
 			for (int i = 0; i < dataParams.length; i++) {
 				ps.setObject(i + 1, dataParams[i]);
@@ -1251,7 +1267,7 @@ public class Db {
 		String type = "";
 		try {
 			String sql = "SHOW COLUMNS FROM " + Db.replaceTable(table);
-			if (conn == null) Db.init(0);
+			if (conn == null) Db.init(MASTER);
 			ps = conn.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -1282,7 +1298,7 @@ public class Db {
 			sql = "SHOW TABLES LIKE '"+Db.replaceTable(table)+"'";
 		}
 		try {
-			if (conn == null) Db.init(0);
+			if (conn == null) Db.init(MASTER);
 			ps =  conn.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -1420,7 +1436,7 @@ public class Db {
 		Map<String, Object> map = new HashMap<>();
 		try {
 			String sql = "SHOW COLUMNS FROM " + Db.replaceTable(table);
-			if (conn == null) Db.init(0);
+			if (conn == null) Db.init(MASTER);
 			ps = conn.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -1454,7 +1470,7 @@ public class Db {
 			String clazz = Common.camelize(table);
 			table = Db.replaceTable(table);
 			String sql = "SHOW COLUMNS FROM " + table;
-			if (conn == null) Db.init(0);
+			if (conn == null) Db.init(MASTER);
 			ps = conn.prepareStatement(sql);
 			ResultSet rs = ps.executeQuery();
 			StringBuilder content = new StringBuilder("package com.app.model;\n\n").append("public class ").append(clazz).append(" extends Core {\n\n");
@@ -1505,7 +1521,7 @@ public class Db {
 	//开启事务
 	public static void startTransaction() {
 		try {
-			if (conn == null) Db.init(1);
+			if (conn == null) Db.init(SLAVER);
 			conn.setAutoCommit(false);
 		} catch (SQLException e) {
 			System.out.println("DB事务关闭自动提交异常");
@@ -1547,6 +1563,7 @@ public class Db {
 		}
 	}
 	public static void close() {
+		Db.connect();
 		try {
 			if (ps != null) { //仅需关闭 PreparedStatement，关闭它时 ResultSet 会自动关闭
 				ps.close();

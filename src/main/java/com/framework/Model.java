@@ -6,6 +6,10 @@ import javax.servlet.http.*;
 import java.util.*;
 
 public class Model {
+	static String connection;
+	static String name;
+	static String table;
+	
 	public String app;
 	public String act;
 	public Request request;
