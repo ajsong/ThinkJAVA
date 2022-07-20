@@ -31,7 +31,7 @@ public class ThinkApplication {
 						String[] arguments = argument.split(",");
 						for (String arg : arguments) {
 							String filepath = createControllerFile(arg, detail);
-							if (filepath != null) System.out.println("controller:\033[32m" + filepath + "\033[m created successfully.");
+							if (filepath != null) System.out.println("Controller:\033[32m" + filepath + "\033[m created successfully.");
 						}
 						System.out.println();
 						System.exit(0);
@@ -39,7 +39,7 @@ public class ThinkApplication {
 						String[] arguments = argument.split(",");
 						for (String arg : arguments) {
 							String filepath = createModelFile(uncamelize(arg), detail);
-							if (filepath != null) System.out.println("model:\033[32m" + filepath + "\033[m created successfully.");
+							if (filepath != null) System.out.println("Model:\033[32m" + filepath + "\033[m created successfully.");
 						}
 						System.out.println();
 						System.exit(0);
@@ -231,7 +231,7 @@ public class ThinkApplication {
 			if (!makedir(path)) return null;
 			String filepath = path + "/" + clazz + ".java";
 			if (new File(filepath).exists()) {
-				System.out.println("controller:\033[31m" + filepath + "\033[m already exist.\n");
+				System.out.println("Controller:\033[31m" + filepath + "\033[m already exist.\n");
 				return null;
 			}
 			StringBuilder sb = new StringBuilder("package com.app."+packagePath+";\n\n").append("public class ").append(clazz).append(" extends Core {\n\n");
@@ -310,7 +310,7 @@ public class ThinkApplication {
 			if (!makedir(path)) return null;
 			String filepath = path + "/" + clazz + ".java";
 			if (new File(filepath).exists()) {
-				System.out.println("model:\033[31m" + filepath + "\033[m already exist.\n");
+				System.out.println("Model:\033[31m" + filepath + "\033[m already exist.\n");
 				return null;
 			}
 			StringBuilder sb = new StringBuilder("package com.app.model;\n\nimport com.framework.tool.*;\nimport java.lang.reflect.*;\nimport java.util.*;\n\n")
