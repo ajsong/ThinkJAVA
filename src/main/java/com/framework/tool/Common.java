@@ -31,7 +31,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 public class Common {
-	static String sdkVersion = "3.8.20220713";
+	static String sdkVersion = "3.9.20220721";
 	static String rootPath;
 	static String runtimeDir;
 	static Map<String, Object> requests;
@@ -282,17 +282,14 @@ public class Common {
 	}
 	//读取yml文件指定值
 	public static Object getYml(String key) {
-		return getYml(key, null, Object.class);
+		return getYml(key, null);
 	}
 	@SuppressWarnings("unchecked")
 	public static <T> T getYml(String key, T defaultValue) {
 		if (defaultValue == null) defaultValue = (T) new Object();
-		return getYml(key, defaultValue, defaultValue.getClass());
-	}
-	@SuppressWarnings("unchecked")
-	public static <T> T getYml(String key, T defaultValue, Class<?> clazz) {
 		Map<String, Object> map = getYmls();
 		if (map == null) return defaultValue;
+		Class<?> clazz = defaultValue.getClass();
 		Object res = map.get(key);
 		if (res == null) return defaultValue;
 		if (clazz == Integer.class) {
@@ -1689,6 +1686,18 @@ public class Common {
 		Upload upload = new Upload();
 		return upload.file(dir, fileType, thirdParty, returnDetail);
 	}
+	
+	//重定向
+	public static Object redirect(String url) {
+		getServlet();
+		HttpServletResponse res = (HttpServletResponse) responses.get(request.getRequestURI());
+		try {
+			res.sendRedirect(url);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	//404
 	public static Object error404() {
@@ -2125,6 +2134,9 @@ public class Common {
 	public static Object success(Object data, String msg, Object extend) {
 		getServlet();
 		HttpServletRequest req = (HttpServletRequest) requests.get(request.getRequestURI());
+		Map<String, String> moduleMap = getModule(req);
+		String returnType = getYml("sdk."+moduleMap.get("module")+".return-type", "");
+		boolean IS_AJAX = isAjax() || returnType.equalsIgnoreCase("json");
 		String dataValue = String.valueOf(data);
 		boolean isStart = preg_match("^[@#]", dataValue);
 		//保持tourl:|stay:在data, .html|.view|<tag>|json:|xml:|view:|display:在msg
@@ -2135,14 +2147,14 @@ public class Common {
 			data = isStart ? null : msg;
 			msg = tmp;
 		}
-		if (isAjax()) {
+		if (IS_AJAX) {
 			try {
 				Map<String, Object> json = new HashMap<>();
 				if (data != null) {
 					json.put("data", DataMap.dataToMap(data));
 				}
 				if (preg_match("^(tourl|redirect):", msg)) {
-					json.put("toUrl", msg.replaceAll("^(tourl|redirect):", ""));
+					json.put("toUrl", msg.replaceFirst("^(tourl|redirect):", ""));
 					msg = "success";
 				} else if (preg_match("^(stay):", msg)) {
 					json.put("stay", 1);
@@ -2156,7 +2168,7 @@ public class Common {
 				e.printStackTrace();
 			}
 		} else if (preg_match("^(tourl|redirect):", msg)) {
-			return "redirect:"+msg.replaceAll("^(tourl|redirect):", "");
+			return redirect(msg.replaceFirst("^(tourl|redirect):", ""));
 		} else if (preg_match("^[@#]", msg)) {
 			return view(data, msg.substring(1), extend, msg.startsWith("#"));
 		} else {
@@ -2166,7 +2178,6 @@ public class Common {
 			} else if (preg_match("<[^>]+>", msg)) { //html标签即按模板内容输出
 				isWriter = true;
 			} else {
-				Map<String, String> moduleMap = getModule(req);
 				msg = moduleMap.get("module") + "/" + moduleMap.get("app") + "/" + moduleMap.get("act");
 			}
 			return view(data, trim(msg, "/"), extend, isWriter);
@@ -2185,8 +2196,13 @@ public class Common {
 		return script(msg, url);
 	}
 	public static Object error(String msg, int code) {
+		getServlet();
+		HttpServletRequest req = (HttpServletRequest) requests.get(request.getRequestURI());
+		Map<String, String> moduleMap = getModule(req);
+		String returnType = getYml("sdk."+moduleMap.get("module")+".return-type", "");
+		boolean IS_AJAX = isAjax() || returnType.equalsIgnoreCase("json");
 		if (code == -9 || code == -100) code = -10;
-		if (isAjax()) {
+		if (IS_AJAX) {
 			if (preg_match("tips=", msg)) {
 				String[] webPaths = trim(msg, "/").replaceFirst("^[@#]", "").split("\\?");
 				if (webPaths.length > 1) {
@@ -2205,8 +2221,8 @@ public class Common {
 			return view(null, msg.substring(1).replace(root_path(), ""), null, msg.startsWith("#"));
 		} else {
 			switch (code) {
-				case -10:return "redirect:/passport/login";
-				case -2:return "redirect:/";
+				case -10:return redirect("/passport/login");
+				case -2:return redirect("/");
 				default:return historyBack(msg);
 			}
 		}

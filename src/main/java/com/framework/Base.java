@@ -73,16 +73,6 @@ public class Base {
 		}
 	}
 	
-	//重定向
-	public void redirect(String url) {
-		this.appKeepRunning = false;
-		try {
-			this.response.sendRedirect(url);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public boolean getAppKeepRunning() {
 		return this.appKeepRunning;
 	}
@@ -179,6 +169,10 @@ public class Base {
 	}
 	public <T> T add_domain_deep(T obj, String field) {
 		return Common.add_domain_deep(obj, field);
+	}
+	public Object redirect(String url) {
+		this.appKeepRunning = false;
+		return Common.redirect(url);
 	}
 	public Object success() {
 		return Common.success();

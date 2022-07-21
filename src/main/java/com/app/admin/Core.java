@@ -68,7 +68,7 @@ public class Core extends Base {
 			Object ret = error("登录失效", -2);
 			try {
 				if (ret instanceof String) {
-					if (((String)ret).startsWith("tourl:") || ((String)ret).startsWith("redirect:")) {
+					if (preg_match("^(tourl|redirect):", String.valueOf(ret))) {
 						this.redirect("/" + this.module + "/login");
 					} else {
 						PrintWriter out = this.response.getWriter();

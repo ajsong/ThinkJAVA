@@ -74,19 +74,19 @@ spring:
     database: 1
     host: 127.0.0.1
     port: 6379
-    #Redis服务器连接密码（默认为空）
+    #服务器连接密码（默认为空）
     password:
-    # 连接超时时间（毫秒）
+    #连接超时时间（毫秒）
     timeout: 1000
     jedis:
       pool:
-        # 连接池最大连接数(使用负值表示没有限制)
+        #连接池最大连接数(使用负值表示没有限制)
         max-active: 200
-        # 连接池最大阻塞等待时间(使用负值表示没有限制)
+        #连接池最大阻塞等待时间(使用负值表示没有限制)
         max-wait: -1
-        # 连接池中的最大空闲连接
+        #连接池中的最大空闲连接
         max-idle: 10
-        # 连接池中的最小空闲连接
+        #连接池中的最小空闲连接
         min-idle: 0
 
 sdk:
@@ -99,11 +99,10 @@ sdk:
     default:
       controller: index
       action: index
-  #静态资源文件夹, 竖线隔开
-  static:
-    resource:
-      dir: static
-  #伪静URI对应app&act, 格式: urlRexp1=app&act,urlRexp2=app&act
+  #设置success、error返回类型, index为模块名称, 值:留空|json
+  index:
+    return-type: json
+  #伪静URI对应的app&act(为获取app、act用), 格式: urlRexp1=app&act,urlRexp2=app&act
   uri:
     map: /s/\\d+=index&code
   #图片主机名
@@ -126,3 +125,9 @@ sdk:
     #缓存类型, file、redis
     type: file
     dir: cache
+
+#将application.yml放到jar包外
+#将jar包上传到服务器上时，将application.yml也上传，在jar包外
+#执行命令 java -jar aaa.jar(jar包名) --spring.config.location=/home/application.yml（application.yml路径）
+#也可以单独修改某个变量的值：
+#java -jar aaa.jar --server.port=8080

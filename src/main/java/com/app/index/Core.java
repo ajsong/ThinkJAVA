@@ -17,10 +17,10 @@ public class Core extends Base {
 	public void __construct(HttpServletRequest request, HttpServletResponse response) {
 		super.__construct(request, response);
 
-		Object access_allow = Common.getYml("sdk.access.allow", null, Object.class);
+		Object access_allow = Common.getYml("sdk.access.allow");
 		if ( access_allow != null ) {
 			String accessAllowHost = null;
-			JSONArray access_allow_host = Common.getYml("sdk.access.allow.host", null, JSONArray.class);
+			JSONArray access_allow_host = Common.getYml("sdk.access.allow.host", new JSONArray());
 			if ( access_allow_host != null ) {
 				if (access_allow_host.size() == 1 && access_allow_host.get(0).equals("*")) accessAllowHost = "*";
 				else {
@@ -157,8 +157,8 @@ public class Core extends Base {
 			Object ret = error("请登录", -100);
 			try {
 				if (ret instanceof String) {
-					if (((String)ret).startsWith("tourl:") || ((String)ret).startsWith("redirect:")) {
-						this.redirect(((String) ret).replaceFirst("tourl:", "").replaceFirst("redirect:", ""));
+					if (preg_match("^(tourl|redirect):", String.valueOf(ret))) {
+						this.redirect(String.valueOf(ret).replaceFirst("^(tourl|redirect):", ""));
 					} else {
 						PrintWriter out = this.response.getWriter();
 						out.write((String) ret);
