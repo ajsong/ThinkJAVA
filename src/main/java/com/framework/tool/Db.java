@@ -1,4 +1,4 @@
-//Developed by @mario 3.0.20220720
+//Developed by @mario 3.1.20220722
 package com.framework.tool;
 
 import com.alibaba.fastjson.*;
@@ -125,8 +125,8 @@ public class Db {
 		}
 	}
 	//指定表名
-	public static Db name(String table) {
-		return Db.table(table);
+	public static Db name(String name) {
+		return Db.table(Db.replaceTable(name));
 	}
 	//指定表名, 可设置别名, 如: table('table t'), 支持双减号转表前缀(不区分大小写), 如: table('--TABLE-- t')
 	public static Db table(String table) {
@@ -142,7 +142,7 @@ public class Db {
 			table = tables[0];
 			db.alias = tables[1];
 		}
-		db.table = Db.replaceTable(table);
+		db.table = table;
 		return db;
 	}
 	//表别名

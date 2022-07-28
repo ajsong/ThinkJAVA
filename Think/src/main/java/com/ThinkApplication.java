@@ -48,14 +48,17 @@ public class ThinkApplication {
 			}
 		}
 		
-		System.out.println("\n\033[33mUsage:\033[m");
-		System.out.println("  command [arguments] [options]");
-		System.out.println("\n\033[33mOptions:\033[m");
-		System.out.println("  \033[32m--detail\033[m   Create the method controller / database field model class");
-		System.out.println("\n\033[33mAvailable commands:\033[m");
-		System.out.println(" \033[33mmake\033[m");
-		System.out.println("  \033[32mmake:controller\033[m   Create a new resource controller class");
-		System.out.println("  \033[32mmake:model\033[m        Create a new model class");
+		System.out.println();
+		System.out.println("\033[33mUsage:\033[m\n" +
+				"  java -jar think.jar [commands] [options]\n" +
+				"\n" +
+				"\033[33mAvailable commands:\033[m\n" +
+				" \033[33mmake\033[m\n" +
+				"  \033[32mmake:controller\033[m   Create a new resource controller class\n" +
+				"  \033[32mmake:model\033[m        Create a new model class\n" +
+				"\n" +
+				"\033[33mOptions:\033[m\n" +
+				"  \033[32m--detail\033[m   Create the method controller / database field model class");
 		System.out.println();
 		System.exit(0);
 		
