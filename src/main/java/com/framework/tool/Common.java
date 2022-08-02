@@ -31,7 +31,7 @@ import java.util.jar.*;
 import java.util.regex.*;
 
 public class Common {
-	static String sdkVersion = "3.9.20220721";
+	static String sdkVersion = "4.0.20220802";
 	static String rootPath;
 	static String runtimeDir;
 	static Map<String, Object> requests;
@@ -629,7 +629,7 @@ public class Common {
 
 	//验证is_date
 	public static boolean isDate(String str) {
-		return preg_match("^(?:(?!0000)\\d{4}[/-](?:(?:0?[1-9]|1[0-2])[/-](?:0?[1-9]|1\\d|2[0-8])|(?:0?[13-9]|1[0-2])[/-](?:29|30)|(?:0?[13578]|1[02])[/-]31)|(?:\\d{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)[/-]0?2[/-]29)$", str);
+		return preg_match("^\\d{4}-\\d{1,2}-\\d{1,2}( \\d{1,2}:\\d{1,2}:\\d{1,2})?$", str);
 	}
 
 	//验证邮箱
@@ -942,7 +942,10 @@ public class Common {
 			case "YESTERDAY": cal.add(Calendar.DATE, -1);break;
 			case "TOMORROW": cal.add(Calendar.DATE, 1);break;
 			default: {
-				if (!preg_match("^\\s*([+-]?\\d+)\\s*\\w+\\s*$", mark)) return time();
+				if (!preg_match("^\\s*([+-]?\\d+)\\s*\\w+\\s*$", mark)) {
+					if (isDate(mark)) return time(mark);
+					return time();
+				}
 				Matcher matcher = Pattern.compile("^\\s*([+-]?\\d+)\\s*(\\w+)\\s*$").matcher(mark);
 				if (matcher.find()) {
 					int interval = Integer.parseInt(matcher.group(1).replace("+", ""));
