@@ -604,7 +604,7 @@ public class Common {
 
 	//字符串是否数字
 	public static boolean isNumeric(Object str) {
-		return preg_match("^[-+]?\\d+$", String.valueOf(str));
+		return preg_match("^[-+]?\\d+(\\.\\d+)?$", String.valueOf(str));
 	}
 
 	//验证手机号
@@ -627,12 +627,12 @@ public class Common {
 		return preg_match("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$", str);
 	}
 
-	//验证is_date
+	//验证日期
 	public static boolean isDate(String str) {
 		return preg_match("^\\d{4}-\\d{1,2}-\\d{1,2}( \\d{1,2}:\\d{1,2}:\\d{1,2})?$", str);
 	}
 
-	//验证邮箱
+	//验证身份证
 	public static boolean isIdcard(String str) {
 		int ID_LENGTH = 17;
 		boolean vIDNumByRegex =  str.matches("(\\d{17}[\\dxX]|\\d{14}[\\dxX])");
@@ -937,27 +937,33 @@ public class Common {
 		mark = mark.toUpperCase();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date(String.valueOf(timestamp).length()<13 ? Long.parseLong(timestamp+"000") : timestamp));
+		boolean equal = false;
 		switch (mark) {
-			case "TODAY": return time();
-			case "YESTERDAY": cal.add(Calendar.DATE, -1);break;
-			case "TOMORROW": cal.add(Calendar.DATE, 1);break;
-			default: {
-				if (!preg_match("^\\s*([+-]?\\d+)\\s*\\w+\\s*$", mark)) {
-					if (isDate(mark)) return time(mark);
-					return time();
-				}
-				Matcher matcher = Pattern.compile("^\\s*([+-]?\\d+)\\s*(\\w+)\\s*$").matcher(mark);
-				if (matcher.find()) {
-					int interval = Integer.parseInt(matcher.group(1).replace("+", ""));
-					switch (matcher.group(2).toUpperCase()) {
-						case "SECOND":case "SECONDS":cal.add(Calendar.SECOND, interval);break;
-						case "MINUTE":case "MINUTES":cal.add(Calendar.MINUTE, interval);break;
-						case "HOUR":case "HOURS":cal.add(Calendar.HOUR_OF_DAY, interval);break;
-						case "DAY":case "DAYS":cal.add(Calendar.DATE, interval);break;
-						case "WEEK":case "WEEKS":cal.add(Calendar.DAY_OF_WEEK, interval);break;
-						case "MONTH":case "MONTHS":cal.add(Calendar.MONTH, interval);break;
-						case "YEAR":case "YEARS":cal.add(Calendar.YEAR, interval);break;
-					}
+			case "TODAY":return time();
+			case "BEFORE":cal.add(Calendar.DATE, -2);equal = true;break;
+			case "YESTERDAY":case "LAST DAY":cal.add(Calendar.DATE, -1);equal = true;break;
+			case "TOMORROW":cal.add(Calendar.DATE, 1);equal = true;break;
+			case "ACQUIRED":case "AFTER":cal.add(Calendar.DATE, 2);equal = true;break;
+			case "LAST WEEK":mark = "-1 WEEK";break;
+			case "LAST MONTH":mark = "-1 MONTH";break;
+			case "LAST YEAR":mark = "-1 YEAR";break;
+		}
+		if (!equal) {
+			if (!preg_match("^\\s*([+-]?\\d+)\\s*\\w+\\s*$", mark)) {
+				if (isDate(mark)) return time(mark);
+				return time();
+			}
+			Matcher matcher = Pattern.compile("^\\s*([+-]?\\d+)\\s*(\\w+)\\s*$").matcher(mark);
+			if (matcher.find()) {
+				int interval = Integer.parseInt(matcher.group(1).replace("+", ""));
+				switch (matcher.group(2).toUpperCase()) {
+					case "SECOND":case "SECONDS":cal.add(Calendar.SECOND, interval);break;
+					case "MINUTE":case "MINUTES":cal.add(Calendar.MINUTE, interval);break;
+					case "HOUR":case "HOURS":cal.add(Calendar.HOUR_OF_DAY, interval);break;
+					case "DAY":case "DAYS":cal.add(Calendar.DATE, interval);break;
+					case "WEEK":case "WEEKS":cal.add(Calendar.DAY_OF_WEEK, interval);break;
+					case "MONTH":case "MONTHS":cal.add(Calendar.MONTH, interval);break;
+					case "YEAR":case "YEARS":cal.add(Calendar.YEAR, interval);break;
 				}
 			}
 		}
